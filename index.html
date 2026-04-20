@@ -4,812 +4,379 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Our Dinner Planner</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --cream: #FAF7F2;
-    --warm-white: #FFFEFB;
-    --ink: #1C1A18;
-    --ink-light: #4A4540;
-    --ink-muted: #8C8680;
-    --terracotta: #C0603A;
-    --terracotta-light: #E8977A;
-    --terracotta-pale: #F5E8E2;
-    --sage: #6B8C6B;
-    --sage-pale: #EBF0EB;
-    --border: #E4DDD6;
-    --border-strong: #C8BFB5;
-    --radius: 12px;
-    --radius-sm: 8px;
-    --shadow: 0 2px 12px rgba(28,26,24,0.08);
-    --shadow-md: 0 4px 24px rgba(28,26,24,0.12);
-  }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--cream);
-    color: var(--ink);
-    min-height: 100vh;
-    font-size: 15px;
-    line-height: 1.6;
-  }
-
-  /* ── Layout ── */
-  .app { max-width: 860px; margin: 0 auto; padding: 0 20px 60px; }
-
-  /* ── Header ── */
-  .header {
-    padding: 36px 0 28px;
-    border-bottom: 1.5px solid var(--border);
-    margin-bottom: 28px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .header-left { }
-  .header-eyebrow {
-    font-size: 11px;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--terracotta);
-    font-weight: 500;
-    margin-bottom: 4px;
-  }
-  .header-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 34px;
-    font-weight: 600;
-    color: var(--ink);
-    line-height: 1.15;
-  }
-  .header-sub {
-    font-size: 13px;
-    color: var(--ink-muted);
-    margin-top: 4px;
-  }
-  .api-pill {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: 999px;
-    font-size: 12px;
-    cursor: pointer;
-    color: var(--ink-light);
-    background: var(--warm-white);
-    transition: border-color .15s;
-  }
-  .api-pill:hover { border-color: var(--terracotta); }
-  .api-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); flex-shrink: 0; }
-  .api-dot.connected { background: var(--sage); }
-
-  /* ── Tabs ── */
-  .tabs {
-    display: flex;
-    gap: 0;
-    border-bottom: 1.5px solid var(--border);
-    margin-bottom: 28px;
-  }
-  .tab {
-    padding: 10px 20px;
-    font-size: 14px;
-    font-weight: 400;
-    color: var(--ink-muted);
-    cursor: pointer;
-    border: none;
-    background: none;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1.5px;
-    transition: color .15s, border-color .15s;
-    font-family: 'DM Sans', sans-serif;
-    white-space: nowrap;
-  }
-  .tab.active { color: var(--terracotta); border-bottom-color: var(--terracotta); font-weight: 500; }
-  .tab:hover:not(.active) { color: var(--ink); }
-
-  /* ── Cards ── */
-  .card {
-    background: var(--warm-white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 24px;
-    margin-bottom: 16px;
-  }
-  .card-recipe {
-    background: var(--warm-white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 16px;
-    overflow: hidden;
-    transition: box-shadow .2s;
-  }
-  .card-recipe:hover { box-shadow: var(--shadow); }
-  .recipe-header {
-    padding: 20px 24px 16px;
-    border-bottom: 1px solid var(--border);
-  }
-  .recipe-body { padding: 16px 24px 20px; }
-
-  /* ── Form elements ── */
-  input, textarea, select {
-    width: 100%;
-    padding: 10px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-size: 14px;
-    color: var(--ink);
-    background: var(--warm-white);
-    font-family: 'DM Sans', sans-serif;
-    transition: border-color .15s;
-    outline: none;
-  }
-  input:focus, textarea:focus { border-color: var(--terracotta); }
-  input::placeholder, textarea::placeholder { color: var(--ink-muted); }
-  textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
-
-  /* ── Buttons ── */
-  button { cursor: pointer; font-family: 'DM Sans', sans-serif; }
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 9px 18px;
-    border-radius: var(--radius-sm);
-    border: 1.5px solid var(--border-strong);
-    background: transparent;
-    color: var(--ink);
-    font-size: 14px;
-    font-weight: 400;
-    transition: all .15s;
-  }
-  .btn:hover { background: var(--cream); border-color: var(--ink-light); }
-  .btn:active { transform: scale(0.98); }
-  .btn-primary {
-    background: var(--terracotta);
-    color: white;
-    border-color: var(--terracotta);
-    font-weight: 500;
-  }
-  .btn-primary:hover { background: #A8502E; border-color: #A8502E; }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-  .btn-sm { padding: 6px 14px; font-size: 13px; }
-  .btn-ghost { border-color: transparent; color: var(--ink-muted); }
-  .btn-ghost:hover { background: var(--cream); border-color: var(--border); color: var(--ink); }
-
-  /* ── Typography ── */
-  .label { font-size: 12px; color: var(--ink-muted); margin-bottom: 6px; font-weight: 500; letter-spacing: .03em; text-transform: uppercase; }
-  .section-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 500; margin-bottom: 12px; }
-  .recipe-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 500; line-height: 1.3; margin-bottom: 6px; }
-  .recipe-desc { font-size: 14px; color: var(--ink-light); line-height: 1.6; }
-  .meta-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
-  .tag {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 400;
-  }
-  .tag-warm { background: var(--terracotta-pale); color: var(--terracotta); }
-  .tag-green { background: var(--sage-pale); color: var(--sage); }
-  .tag-gray { background: var(--cream); color: var(--ink-muted); border: 1px solid var(--border); }
-
-  /* ── Ingredients ── */
-  .ingredient-list { list-style: none; }
-  .ingredient-item {
-    display: flex; align-items: center; gap: 8px;
-    padding: 5px 0;
-    border-bottom: 1px solid var(--cream);
-    font-size: 14px;
-  }
-  .ingredient-item:last-child { border-bottom: none; }
-  .check-icon {
-    width: 18px; height: 18px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px; flex-shrink: 0; font-weight: 500;
-  }
-  .check-yes { background: var(--sage-pale); color: var(--sage); }
-  .check-no { background: var(--cream); color: var(--ink-muted); border: 1px solid var(--border); }
-
-  /* ── Steps ── */
-  .steps-list { list-style: none; }
-  .step-item { display: flex; gap: 12px; padding: 6px 0; font-size: 14px; line-height: 1.6; }
-  .step-num {
-    width: 22px; height: 22px; border-radius: 50%;
-    background: var(--terracotta-pale); color: var(--terracotta);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 600; flex-shrink: 0; margin-top: 1px;
-  }
-
-  /* ── Stars ── */
-  .stars { display: flex; gap: 2px; }
-  .star { font-size: 20px; cursor: pointer; color: var(--border-strong); transition: color .1s; line-height: 1; }
-  .star.on { color: #D4900A; }
-  .star:hover { color: #D4900A; }
-
-  /* ── Pantry grid ── */
-  .pantry-search-row { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
-  .pantry-count { font-size: 12px; color: var(--ink-muted); white-space: nowrap; }
-  .pantry-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 6px;
-    max-height: 360px;
-    overflow-y: auto;
-    padding: 2px;
-  }
-  .pantry-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 5px 8px 5px 10px;
-    background: var(--cream);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-size: 12px;
-    color: var(--ink-light);
-    gap: 4px;
-  }
-  .pantry-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
-  .pantry-remove { background: none; border: none; color: var(--ink-muted); font-size: 16px; line-height: 1; padding: 0 2px; opacity: 0.5; }
-  .pantry-remove:hover { opacity: 1; color: var(--terracotta); }
-
-  /* ── Divider ── */
-  .divider { height: 1px; background: var(--border); margin: 14px 0; }
-
-  /* ── Utility ── */
-  .row { display: flex; gap: 10px; align-items: center; }
-  .flex1 { flex: 1; }
-  .text-muted { color: var(--ink-muted); font-size: 13px; }
-  .text-small { font-size: 12px; }
-  .mt8 { margin-top: 8px; }
-  .mt12 { margin-top: 12px; }
-  .mb12 { margin-bottom: 12px; }
-  .mb6 { margin-bottom: 6px; }
-  .empty-state { text-align: center; padding: 40px 20px; color: var(--ink-muted); }
-  .empty-icon { font-size: 36px; margin-bottom: 12px; }
-  .empty-title { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--ink-light); margin-bottom: 6px; }
-
-  /* ── Loading ── */
-  .loading-dots { display: flex; gap: 6px; justify-content: center; padding: 32px 0; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--terracotta-light); animation: bounce 1.2s ease-in-out infinite; }
-  .dot:nth-child(2) { animation-delay: .15s; }
-  .dot:nth-child(3) { animation-delay: .3s; }
-  @keyframes bounce { 0%,80%,100%{transform:translateY(0);opacity:.7}40%{transform:translateY(-8px);opacity:1} }
-
-  /* ── Modal overlay ── */
-  .modal-bg {
-    position: fixed; inset: 0;
-    background: rgba(28,26,24,0.5);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 100; padding: 20px;
-  }
-  .modal {
-    background: var(--warm-white);
-    border-radius: var(--radius);
-    padding: 28px;
-    max-width: 420px; width: 100%;
-    box-shadow: var(--shadow-md);
-  }
-  .modal-title { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 8px; }
-  .modal-sub { font-size: 13px; color: var(--ink-muted); margin-bottom: 20px; line-height: 1.5; }
-  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
-
-  /* ── Notes ── */
-  .notes-box { background: var(--cream); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px; color: var(--ink-light); line-height: 1.6; white-space: pre-wrap; margin-top: 8px; border: 1px solid var(--border); }
-
-  /* ── Accordion ── */
-  .accordion-toggle { background: none; border: none; display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-muted); padding: 0; font-family: 'DM Sans', sans-serif; }
-  .accordion-toggle:hover { color: var(--terracotta); }
-  .accordion-arrow { font-size: 10px; transition: transform .2s; }
-  .accordion-arrow.open { transform: rotate(180deg); }
-
-  /* ── Saved badge ── */
-  .saved-date { font-size: 11px; color: var(--ink-muted); margin-top: 2px; }
-
-  /* ── Share strip ── */
-  .share-strip {
-    background: var(--terracotta-pale);
-    border: 1.5px solid var(--terracotta-light);
-    border-radius: var(--radius);
-    padding: 14px 18px;
-    display: flex; align-items: center; gap: 12px;
-    margin-bottom: 20px; flex-wrap: wrap;
-  }
-  .share-strip-text { flex: 1; font-size: 13px; color: var(--terracotta); }
-  .share-strip-text strong { font-weight: 500; }
-
-  @media (max-width: 520px) {
-    .header-title { font-size: 26px; }
-    .tabs { overflow-x: auto; }
-    .tab { padding: 10px 14px; font-size: 13px; }
-    .pantry-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--cream:#FAF7F2;--ww:#FFFEFB;--ink:#1C1A18;--inkl:#4A4540;--inkm:#8C8680;--terra:#C0603A;--terral:#E8977A;--terrap:#F5E8E2;--sage:#6B8C6B;--sagep:#EBF0EB;--bd:#E4DDD6;--bds:#C8BFB5;--r:12px;--rs:8px}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;font-size:15px;line-height:1.6}
+.app{max-width:860px;margin:0 auto;padding:0 20px 60px}
+.hdr{padding:36px 0 24px;border-bottom:1.5px solid var(--bd);margin-bottom:24px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--terra);font-weight:500;margin-bottom:4px}
+h1{font-family:'Playfair Display',serif;font-size:34px;font-weight:600;line-height:1.15}
+.sub{font-size:13px;color:var(--inkm);margin-top:4px}
+.api-btn{display:flex;align-items:center;gap:8px;padding:9px 18px;border:1.5px solid var(--bd);border-radius:999px;font-size:13px;cursor:pointer;color:var(--inkl);background:var(--ww);font-family:inherit;transition:all .15s}
+.api-btn:hover{border-color:var(--terra);color:var(--terra)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--bds);flex-shrink:0;transition:background .3s}
+.dot.on{background:var(--sage)}
+.api-panel{background:var(--ww);border:1.5px solid var(--terral);border-radius:var(--r);padding:24px;margin-bottom:20px;display:none}
+.api-panel.open{display:block}
+.ptitle{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:8px}
+.psub{font-size:13px;color:var(--inkm);margin-bottom:16px;line-height:1.6}
+.psub a{color:var(--terra)}
+.strip{background:var(--terrap);border:1.5px solid var(--terral);border-radius:var(--r);padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.stript{flex:1;font-size:13px;color:var(--terra)}
+.tabs{display:flex;border-bottom:1.5px solid var(--bd);margin-bottom:24px}
+.tab{padding:10px 20px;font-size:14px;color:var(--inkm);cursor:pointer;border:none;background:none;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:color .15s,border-color .15s;font-family:inherit;white-space:nowrap}
+.tab.active{color:var(--terra);border-bottom-color:var(--terra);font-weight:500}
+.tab:hover:not(.active){color:var(--ink)}
+.card{background:var(--ww);border:1.5px solid var(--bd);border-radius:var(--r);padding:20px 24px;margin-bottom:16px}
+.rcard{background:var(--ww);border:1.5px solid var(--bd);border-radius:var(--r);margin-bottom:16px;overflow:hidden}
+.rhdr{padding:20px 24px 16px;border-bottom:1px solid var(--bd)}
+.rbody{padding:16px 24px 20px}
+input,textarea{width:100%;padding:10px 14px;border:1.5px solid var(--bd);border-radius:var(--rs);font-size:14px;color:var(--ink);background:var(--ww);font-family:inherit;transition:border-color .15s;outline:none}
+input:focus,textarea:focus{border-color:var(--terra)}
+input::placeholder,textarea::placeholder{color:var(--inkm)}
+textarea{resize:vertical;min-height:72px;line-height:1.5}
+button{cursor:pointer;font-family:inherit}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--rs);border:1.5px solid var(--bds);background:transparent;color:var(--ink);font-size:14px;transition:all .15s}
+.btn:hover{background:var(--cream)}
+.btn:active{transform:scale(0.98)}
+.btn-p{background:var(--terra);color:#fff;border-color:var(--terra);font-weight:500}
+.btn-p:hover{background:#A8502E;border-color:#A8502E}
+.btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-sm{padding:6px 14px;font-size:13px}
+.btn-g{border-color:transparent;color:var(--inkm)}
+.btn-g:hover{background:var(--cream);border-color:var(--bd);color:var(--ink)}
+.lbl{font-size:11px;color:var(--inkm);margin-bottom:6px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+.rtitle{font-family:'Playfair Display',serif;font-size:20px;font-weight:500;line-height:1.3;margin-bottom:6px}
+.rdesc{font-size:14px;color:var(--inkl);line-height:1.6}
+.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:12px}
+.tag-g{background:var(--sagep);color:var(--sage)}
+.tag-n{background:var(--cream);color:var(--inkm);border:1px solid var(--bd)}
+.ings{list-style:none}
+.ing{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--cream);font-size:14px}
+.ing:last-child{border-bottom:none}
+.ck{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;font-weight:600}
+.ck-y{background:var(--sagep);color:var(--sage)}
+.ck-n{background:var(--cream);color:var(--inkm);border:1px solid var(--bd)}
+.steplist{list-style:none}
+.step{display:flex;gap:10px;padding:5px 0;font-size:14px;line-height:1.6}
+.snum{width:22px;height:22px;border-radius:50%;background:var(--terrap);color:var(--terra);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;margin-top:2px}
+.stars{display:flex;gap:2px}
+.star{font-size:20px;cursor:pointer;color:var(--bds);line-height:1;border:none;background:none;padding:0;transition:color .1s}
+.star.on{color:#D4900A}
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;max-height:380px;overflow-y:auto;padding:2px}
+.pi{display:flex;align-items:center;justify-content:space-between;padding:5px 6px 5px 10px;background:var(--cream);border:1px solid var(--bd);border-radius:var(--rs);font-size:12px;color:var(--inkl);gap:4px}
+.pi span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.prm{background:none;border:none;color:var(--inkm);font-size:15px;line-height:1;padding:0 2px;opacity:.5}
+.prm:hover{opacity:1;color:var(--terra)}
+.divider{height:1px;background:var(--bd);margin:14px 0}
+.row{display:flex;gap:10px;align-items:center}
+.f1{flex:1}
+.mt8{margin-top:8px}.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}
+.muted{color:var(--inkm);font-size:13px}
+.empty{text-align:center;padding:40px 20px;color:var(--inkm)}
+.eico{font-size:36px;margin-bottom:12px}
+.etitle{font-family:'Playfair Display',serif;font-size:18px;color:var(--inkl);margin-bottom:6px}
+.loadwrap{padding:28px 0}
+.loading{display:flex;gap:6px;justify-content:center;margin-bottom:8px}
+.dp{width:8px;height:8px;border-radius:50%;background:var(--terral);animation:bop 1.2s ease-in-out infinite}
+.dp:nth-child(2){animation-delay:.15s}.dp:nth-child(3){animation-delay:.3s}
+@keyframes bop{0%,80%,100%{transform:translateY(0);opacity:.7}40%{transform:translateY(-8px);opacity:1}}
+.err{color:var(--terra);font-size:14px;background:var(--terrap);border-radius:var(--rs);padding:10px 14px;margin-bottom:8px}
+.sdate{font-size:11px;color:var(--inkm);margin-top:2px}
+@media(max-width:600px){.tabs{overflow-x:auto}.tab{padding:10px 14px;font-size:13px}.pg{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}.g2{grid-template-columns:1fr!important}}
 </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- Header -->
-  <div class="header">
-    <div class="header-left">
-      <div class="header-eyebrow">Family Kitchen</div>
-      <h1 class="header-title">Our Dinner Planner</h1>
-      <div class="header-sub" id="pantry-count-header">Loading pantry...</div>
+  <div class="hdr">
+    <div>
+      <div class="eyebrow">Family Kitchen</div>
+      <h1>Our Dinner Planner</h1>
+      <div class="sub" id="hdr-count">Loading pantry...</div>
     </div>
-    <button class="api-pill" id="api-btn" onclick="openApiModal()">
-      <span class="api-dot" id="api-dot"></span>
-      <span id="api-label">Set up AI</span>
+    <button class="api-btn" onclick="togglePanel()">
+      <span class="dot" id="api-dot"></span>
+      <span id="api-lbl">Set up AI</span>
     </button>
   </div>
 
-  <!-- Share strip (shown when no API key) -->
-  <div class="share-strip" id="share-strip" style="display:none">
-    <div class="share-strip-text">
-      <strong>Add your Anthropic API key</strong> to get recipe suggestions. Click "Set up AI" above — it's free to get started at console.anthropic.com.
+  <div class="api-panel" id="api-panel">
+    <div class="ptitle">Connect AI</div>
+    <div class="psub">Enter your Anthropic API key. It is saved only in your browser and sent directly to Anthropic &mdash; nowhere else.<br><br>Get a free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> &rarr; API Keys &rarr; Create key.</div>
+    <div class="lbl">API Key</div>
+    <input type="password" id="api-input" placeholder="sk-ant-..." style="margin-bottom:12px">
+    <div class="row" style="justify-content:flex-end;gap:8px">
+      <button class="btn btn-g btn-sm" onclick="togglePanel()">Cancel</button>
+      <button class="btn btn-p btn-sm" onclick="saveKey()">Save &amp; connect</button>
     </div>
-    <a href="https://console.anthropic.com" target="_blank" class="btn btn-sm" style="white-space:nowrap">Get API key</a>
   </div>
 
-  <!-- Tabs -->
+  <div class="strip" id="no-key" style="display:none">
+    <div class="stript"><strong>Add your Anthropic API key</strong> to get AI recipe suggestions. Click &ldquo;Set up AI&rdquo; above &mdash; takes 2 minutes.</div>
+    <a href="https://console.anthropic.com" target="_blank" class="btn btn-sm" style="white-space:nowrap;text-decoration:none;flex-shrink:0">Get key &rarr;</a>
+  </div>
+
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('ideas', this)">Recipe Ideas</button>
-    <button class="tab" onclick="switchTab('saved', this)">Saved Recipes</button>
-    <button class="tab" onclick="switchTab('pantry', this)">My Pantry</button>
+    <button class="tab active" onclick="switchTab('ideas',this)">Recipe Ideas</button>
+    <button class="tab" onclick="switchTab('saved',this)">Saved Recipes</button>
+    <button class="tab" onclick="switchTab('pantry',this)">My Pantry</button>
   </div>
 
-  <!-- ════ IDEAS TAB ════ -->
   <div id="tab-ideas">
     <div class="card">
-      <div class="label">What are you in the mood for tonight?</div>
-      <textarea id="idea-input" placeholder="e.g. something quick with chicken, a cozy pasta dish, using up ground beef, healthy weeknight meal..."></textarea>
+      <div class="lbl">What are you in the mood for tonight?</div>
+      <textarea id="idea-input" placeholder="e.g. something quick with chicken, a cozy pasta dish, healthy weeknight meal..."></textarea>
       <div class="row mt8" style="justify-content:flex-end">
-        <button class="btn btn-primary" id="find-btn" onclick="getRecipes()">
-          Find recipes
-        </button>
+        <button class="btn btn-p" id="find-btn" onclick="getRecipes()">Find recipes</button>
       </div>
     </div>
-
-    <div id="loading-state" style="display:none">
-      <div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-      <div style="text-align:center;font-size:13px;color:var(--ink-muted);margin-top:-12px;padding-bottom:24px">Browsing your pantry for ideas...</div>
+    <div id="load-el" style="display:none" class="loadwrap">
+      <div class="loading"><div class="dp"></div><div class="dp"></div><div class="dp"></div></div>
+      <div style="text-align:center;font-size:13px;color:var(--inkm)">Browsing your pantry for ideas...</div>
     </div>
-
-    <div id="error-msg" style="display:none;color:var(--terracotta);font-size:14px;padding:8px 0;margin-bottom:8px"></div>
-
-    <div id="suggestions-container"></div>
+    <div id="err-el" style="display:none" class="err"></div>
+    <div id="sug-el"></div>
   </div>
 
-  <!-- ════ SAVED TAB ════ -->
   <div id="tab-saved" style="display:none">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-      <div class="section-title" style="margin-bottom:0" id="saved-count-title">Saved Recipes</div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-sm btn-ghost" onclick="exportData()">Export</button>
-        <label class="btn btn-sm btn-ghost" style="cursor:pointer">Import <input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
-      </div>
+    <div class="row mb12">
+      <div style="flex:1;font-family:'Playfair Display',serif;font-size:20px;font-weight:500" id="saved-title">Saved Recipes</div>
+      <button class="btn btn-g btn-sm" onclick="exportData()">Export</button>
+      <label class="btn btn-g btn-sm" style="cursor:pointer">Import<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
     </div>
-    <div id="saved-container">
-      <div class="empty-state">
-        <div class="empty-icon">📖</div>
-        <div class="empty-title">No saved recipes yet</div>
-        <div class="text-muted">Save recipes from the Ideas tab to build your collection</div>
-      </div>
-    </div>
+    <div id="saved-el"></div>
   </div>
 
-  <!-- ════ PANTRY TAB ════ -->
   <div id="tab-pantry" style="display:none">
     <div class="card mb12">
-      <div class="label">Add food item</div>
+      <div class="lbl">Add food item</div>
       <div class="row">
-        <input class="flex1" id="new-item-input" placeholder="e.g. Organic Salmon Fillet" onkeydown="if(event.key==='Enter')addPantryItem()">
-        <button class="btn btn-primary" onclick="addPantryItem()">Add</button>
+        <input class="f1" id="new-item" placeholder="e.g. Organic Salmon Fillet" onkeydown="if(event.key==='Enter')addItem()">
+        <button class="btn btn-p" onclick="addItem()">Add</button>
       </div>
     </div>
     <div class="card">
-      <div class="pantry-search-row">
-        <input class="flex1" id="pantry-search" placeholder="Search pantry..." oninput="renderPantry()">
-        <span class="pantry-count" id="pantry-count">0 items</span>
+      <div class="row mb8">
+        <input class="f1" id="p-search" placeholder="Search pantry..." oninput="renderPantry()">
+        <span style="font-size:12px;color:var(--inkm);white-space:nowrap" id="p-count">0 items</span>
       </div>
-      <div class="pantry-grid" id="pantry-grid"></div>
+      <div class="pg" id="p-grid"></div>
     </div>
   </div>
 
 </div>
-
-<!-- ════ API KEY MODAL ════ -->
-<div class="modal-bg" id="api-modal" style="display:none" onclick="if(event.target===this)closeApiModal()">
-  <div class="modal">
-    <div class="modal-title">Connect AI</div>
-    <div class="modal-sub">Enter your Anthropic API key to power recipe suggestions. Your key is saved locally in your browser and never sent anywhere except Anthropic's servers. Get a free key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--terracotta)">console.anthropic.com</a>.</div>
-    <div class="label">API Key</div>
-    <input type="password" id="api-key-input" placeholder="sk-ant-..." style="margin-bottom:0">
-    <div class="modal-actions">
-      <button class="btn btn-sm btn-ghost" onclick="closeApiModal()">Cancel</button>
-      <button class="btn btn-sm btn-primary" onclick="saveApiKey()">Save key</button>
-    </div>
-  </div>
-</div>
-
 <script>
-HTMLEOF
+const PANTRY_DEFAULTS = ["100% Grass Fed Beef Round Stew Meat", "100% Juice, Pomegranate, 32 fl oz", "15 count scallops?", "365 Mild Italian Pork Sausage, 16 Ounce", "365 Organic Coleslaw Mix, 12 Ounce", "365 Pecans - Pieces, 8 oz", "ARETHUSA FARMS Chocolate Milk, 16 FZ", "ARETHUSA FARMS Sour Cream, 16 OZ", "ASHLEY CHASE ESTATE Seaside Cheddar", "Alexia Foods, Fries Waffle Cut Sweet Potato Seasoned Salt, 20 Ounce", "Almond Dark Chocolate Covered Protein, 6 Ounce", "Almonds Sliced, 8 Ounce", "Almonds Unroasted Unsalted Value Size Organic, 20 Ounce", "Almonds Whole, 16 Ounce", "Almonds, 16 oz", "Almonds, Blanched & Slivered, 8 oz", "Alphas Produce Bok Choy Baby Shanghai Tips, 16 OZ", "Alter Eco, Truffles Holiday Chocolate Organic, 4.2 Ounce", "Amy's, Macaroni & Cheese, 9 Ounce", "Andrew & Everett Swiss Cheese", "Andrew & Everett, Cheese American Yellow Fresh Pack", "Andrex Quilts Toilet Roll Tissue Paper - 16 Rolls", "Annie'S Homegrown, Mac Cheese White Cheddar 4 Pack, 8.04 Ounce", "Annie's Macaroni & Cheese, Shells & Real Aged Cheddar, 6 oz", "Annie's Organic Cheddar Bunnies Baked Snack Crackers, 7.5 oz.", "Annie's Organic White Cheddar Bunnies Baked Snack Crackers, 7.5 oz", "Apple & Eve Organic 100% Apple Juice, 48 oz", "Apple & Eve, Juice Very Berry, 8 Pack, 6.75 Fl Oz", "Apple Honeycrisp Conventional, 1 Each (Brands May Vary)", "Applegate Farms Boneless Thin Pork Loin", "Applegate Farms Sliced Genoa Salami, 4 OZ", "Applegate Farms, Salami Genoa Sliced, 4 Ounce", "Applegate Natural Uncured Genoa Deli-Salami, 4 Oz", "Applegate, Natural Uncured Sunday Bacon, 8oz", "Applegate, Organic No Sugar Uncured Bacon, 8 oz", "Applegate, Organic Uncured Sunday Bacon, 8oz", "Apricots Soft Dried Organic, 5.3 Ounce", "Arethusa Farms, Milk Whole, 64 Fl Oz", "Aromatic Butternut Squash Soup, 24 Ounce", "Arrowhead Mills, Whole Wheat Stoneground Flour, Organic, 22 Ounce", "Artichoke Quarted, 14.1 Ounce", "Artikaas, Gouda Youngsters Smoked", "Artisan Grains Quinoa, 220g", "Artisola Pasta, Organic Chicken & Mozzarella Ravioli, 8 oz", "Artisola Pasta, Organic Spinach & Cheese Ravioli, 8 oz", "Asparagus Green", "Assorted Entertainment Crackers , 8.8 oz", "Atlantic Cod Fillet", "Atlantic Salmon Fillet", "Aurora Products, Pumpkin Seeds Raw Organic, 10 Ounce", "Avocado Hass Small Conventional, 1 Each", "Avocado Oil Spray, 5 Fl Oz", "BAR FIG WW 6CT", "BB Dakota by Steve Madden Women's Misses Checking in Pant, Walnut, 6", "BELL & EVANS Ground Chicken Breast, 16 OZ", "BROWN COW FARM Strawberry Cream Top Yogurt, 5.3 OZ", "BROWN COW FARM Vanilla Whole Milk Yogurt, 5.3 OZ", "BULK Dark Chocolate Almonds", "BULK Organic Walnut Halves Pieces", "Baby Plum Tomatoes 275g", "Bagel Everything 6 Count, 24 Ounce", "Bagels Everything 6 Count, 18 Ounce", "Baking Powder Aluminum Free, 10 Ounce", "Banana Conventional Whole Trade Guarantee, 1 Each", "Banana Conventional, 1 Each", "Banana Organic, 1 Each", "Banza, Pasta Elbow Chickpea, 8 Ounce", "Bar Cereal Blueberry Organic 6 Count, 7.8 Ounce", "Barley Organic", "Basil Organic", "Basil Pesto, 6.5 oz", "Bean Green Microwave Trimmed, 12 Ounce", "Beans Black No Salt Added Organic, 13.4 Ounce", "Beans Garbanzo No Salt Added Organic, 13.4 Ounce", "Beans Great Northern Organic, 15.5 Ounce", "Beans Green Cut Organic, 16 Ounce", "Beef Bone Broth Soup by Kettle and Fire, 1 Pack", "Beef Chuck Roast Boneless Step 1", "Beef Chuck Stew Meat Extra Lean Step 1", "Beef Chuck Teres Major Step 1", "Beef Ground 90% Lean 10% Fat, 16 Ounce", "Beef Stew Meat Grass Fed Step 4", "Beef Tenderloin Roast, Step 1", "Bell & Evans Boneless Skin On Chicken Breast", "Ben & Jerry's Ice Cream, Vanilla Caramel Fudge 16 oz (Frozen)", "Ben & Jerry's Ice Cream, Vanilla, 16 oz", "Berry Blend Organic, 32 Ounce", "Bertagni Four Cheese Tortellini, 8.8 OZ", "Beyond Meat, Beyond Sausage, Hot Italian, 14 Oz", "Bisousweet Confections Maple Apple Doughnut Muffins, 9 OZ", "Black Forest Uncured Ultra-Thin Ham Slices, 95% Lean, 6 oz", "Black Plum", "Blend Mexican Shred Organic, 8 Ounce", "Blueberries Wild Organic, 32 Ounce", "Blueberries, 12 Ounce", "Bob's Red Mill Gluten Free Active Dry Yeast, 08 Oz", "Bob's Red Mill Semolina Pasta Flour, 24 oz", "Bok Choy Organic, 1 Each", "Boneless Pork Loin Chops", "Boneless Skinless Chicken Thighs", "Bonne Maman Preserve, Raspberry, 13-Ounce", "Boulder Canyon, Chips Potato Avocado Oil Sea, 5.25 Ounce", "Boulder Canyon, Chips Potato Wavy Classic Sea Salt, 5.5 Ounce", "Bread Boule Whole Wheat, 20 Ounce", "Bread Cranberry Nut, 16 Ounce", "Bread Crumbs Original, 15 Ounce", "Bread Paesano Organic, 16 Ounce", "Bread Sandwich Classic Organic, 20 Ounce", "Bread Sandwich Classic, 24 Ounce", "Bread Sourdough Batard Country, 16 Ounce", "Bread Sourdough Sandwich, 24 Ounce", "Breadcrumbs Organic, 9 Ounce", "Breaded Chickenless Nuggets, 10 oz, (Frozen)", "Brioche Hamburger Bun", "Brioche Roll 6 Count", "Broccoli Crowns Conventional, 1 Each (Brands May Vary)", "Broth Chicken Organic, 32 Fl Oz", "Broth Vegetable Organic, 48 Fl Oz", "Brown Butter Chocolate Chunk Mini Cookie Dough 18 Count", "Brownie Fudge 4 Count, 12 Ounce", "Brussels Sprout Bulk Conventional, 0.5lb", "Brussels Sprout Organic, 16 Ounce", "Brussels Sprout Shaved Conventional, 12 Ounce", "Brussels Sprouts Petite, 16 Ounce", "Bulk, Almond Sliced", "Bulk, Cranberries Premium Deluxe Whole, 9 Ounce", "Bulk, Granola Maple Harvest, 16 Ounce", "Bulk, Pretzel Milk Chocolate", "Bulk, Rice Long Grain Brown", "Bulk, Sunflower Seed Roasted No Salt", "Bun Brioche Hamburger 6 Count, 10.6 Ounce", "Buns Hamburger White 8 Count Organic, 16 Ounce", "Burnett Dairy Provolone Cheese", "Butter Cookies & Sweet Cream Italian Gelato, 16 Fl Oz", "Butter Kernel Cream Style Corn, 14.75 OZ", "Butter Salted Organic, 16 Ounce", "Butter Unsalted Organic, 16 Ounce", "Butternut Mountain Farm Robust Dark Maple Syrup, 8 FZ", "CALABRO CHEESE Whole Milk Mozzarella, 8 OZ", "CARLSON ORCHARD Pink Lemonade, 64 FZ", "Cabot Mild Cheddar Cheese", "Cabot Vermont, Cheddar White Extra Sharp Bar, 8 Ounce", "Cabot Vermont, Pepper Jack Cracker Cuts, 7 Ounce", "Cabot, Cheddar White Mild Sliced, 8 Ounce", "Cabot, Monterey Jack Bar, 8 Ounce", "Cal Organic Organic Broccoli, 1 LB", "Calabro Cheese, Ricotta Part Skim, 16 Ounce", "Calabro Cheese, Ricotta Whole Milk, 16 Ounce", "California Olive Ranch Balsamic Vinaigrette, 10 FZ", "California Olive Ranch Everyday Extra Virgin Olive Oil, 33.81 Ounce", "Cane Sugar, 64 Ounce", "Cane Sugar, 64 oz", "Canola Oil, 32 fl oz", "Canyon Bakehouse, Bread Rye Deli, 18 Ounce", "Capers Non Pareil Organic, 2 Ounce", "Carlson Orchard, Cider Apple, 64 Fl Oz", "Carlson Orchard, Cider Apple, 64 Ounce", "Carlson Orchard, Lemonade, 64 Ounce", "Carrot Baby Peeled Bag Organic, 16 Ounce (Brands May Vary)", "Carrot Bag Organic, 32 Ounce", "Carrot Chips Organic, 16 Ounce", "Carrot Petite Peeled Organic, 12 Ounce", "Carrot Sticks Organic, 12 Ounce", "Cauliflower", "Cauliflower Purple Conventional, 1 Each", "Celery Hearts Organic, 1 Each", "Celery Organic, 1 Bunch", "Celery Sticks Organic, 8 Ounce", "Cereal Brown Rice Crisps Organic, 12 Ounce", "Changing Seas, Norwegian Cold Smoked Salmon, 8 Ounce", "Changing Seas, Smoked Salmon, 4 Ounce", "Cheddar Sharp Bar, 16 Ounce", "Cheddar Sharp Bar, 8 Ounce", "Cheese Bar, Mozzarella, 8 Ounce", "Cheese Cottage Organic Organic, 16 Ounce", "Cheese Mozzarella Fresh Pack", "Cheese Pepperjack BC Charcuterie", "Cheese Swiss Fresh Pack", "Cheese Tortellini, 9 Ounce", "Cherries Sour Sweetened, 8 Ounce", "Cherry Red Conventional, 16 Ounce", "Chicken Breast Boneless Skinless Cutlet Tray Pack Step 2", "Chicken Breast Tenderloin Boneless Tray Pack Organic Step 3", "Chicken Breast Tenderloin Prepacked Organic Step 3", "Chicken Wings Buffalo Fresh Pack", "Chickenless Nuggets Breaded, 10 Ounce", "Chip Pita Sea Salt, 9 Ounce", "Chip Potato Classic Sea Salt Organic, 5 Ounce", "Chip Potato Classic Sour Cream Onion, 10 Ounce", "Chip Potato Rippled Sea Salt, 10 Ounce", "Chip Potato Sea Salt Classic, 10 Oz", "Chobani Non-fat Greek Yogurt, Vanilla Blended 32oz", "Chobani\u00ae Vanilla Blended Non-Fat Greek Yogurt 32oz", "Chocolate Bourbon Pecan Pie 12in", "Chocolate Chip Mini Cookie Dough 18 Count", "Chocolove Chocolate, Toffee & Almonds in Milk Chocolate, 3.2 oz", "Cholula Original Hot Sauce, 5 fl oz", "Chopped Pecans, 8 Ounce", "Chopped Spinach, 16 oz, (Frozen)", "Chosen Foods, Avocado Oil Chipotle Squeeze Mayo, 11.25 Ounce", "Christopher Ranch, Garlic Minced Conventional, 4.5 Ounce", "Classic Pork Breakfast Sausage, 10 ct, (Frozen)", "Classic Rotisserie Chicken, Chilled", "Coconut Shredded Organic, 8 Ounce", "Coconut Water Organic, 32 Fl Oz", "Cod Fillet Atlantic MSC", "Colby Jack 12/6/1oz. Sticks - rBGH Free, 6 oz", "Community Coffee Cucina & Amore Artichoke Quarter Marinated, 14.5 oz", "Cookie Chocolate Chip 6 Count, 9 Ounce", "Cookie Chocolate Chip Mini 18 Count, 12 Ounce", "Corn Fire Roasted Organic, 16 Ounce", "Corn Starch, 16 oz", "Corn Yellow Sweet Organic, 16 Ounce", "Corn, 4 Count", "Country Archer, Beef Jerky, Original, 2.5 Oz", "Country Breakfast Pork Sausage, Step 1, 16 Ounce", "Cracker Pita Ancient Grain, 5 Ounce", "Crackers Graham, 14.4 Ounce", "Cranberries Dried Sweetened Organic, 8 Ounce", "Cranberry", "Crave Brothers, Mozzarella Fresh Log, 16 Ounce", "Cream Cheese Rbst Free, 8 Ounce", "Cream of Tartar, 3.52 oz", "Creminelli, Sliced Prosciutto, 2 Ounce", "Crispy Onions, 6 oz", "Croissant Butter Large 4 Count, 9 Ounce", "Cuban Beef Empanadas", "Cucina & Amore Bruschetta Artichoke", "Cucumber Green Conventional, 1 Each", "DIESTEL TURKEY RANCH Oven Roasted Turkey Breast", "Daisy Brand French Onion Dip 16 Oz", "Daisy, Regular Sour Cream, 8 Ounce", "Dave's Killer Bread Killer Classic English Muffins, 13.2 oz", "De Cecco Farfalle Pasta, 16 Oz", "De Cecco Pasta Spaghettini Thin, 16 oz", "De Cecco Pasta, Cavatappi No.87, 16 oz", "De Cecco Pasta, Elbows Pasta, 16 oz", "De Cecco Pasta, Pasta Spaghetti, 16 Ounce", "De Cecco Spaghetti No. 12, 7 Grain, 12 Oz", "Death Wish Coffee Company Ground Coffee, 16 oz", "Diced Tomatoes, 28 oz", "Domino Sugar, Sugar Cane, 32 Ounce", "Double Cheddar Broccoli Soup, 24 Ounce", "Dove DermaSpa Intensive Hand Cream, 75ml", "Dried Fruit, Tart Cherries - Sweetened, 8 Ounce", "Dry Roasted and Salted Peanuts, 16 Ounce", "Dubreton Organic Mild Italian Pork Sausage, 14 OZ", "EL TRIGAL 6 Month Aged Manchego", "Edamame Shelled, 12 Ounce", "Eden Foods, Pasta Udon Whole Grain Organic, 8 Ounce", "Eggplant Regular Organic, 1 Each", "Eggs Brown Cage Free Non-Gmo Fed Large, 12 Count", "Eggs Brown Extra Large Grade A Organic, 12 Count", "Eggs Brown Omega 3 Large Organic, 12 Count", "Eggs Grade A Brown Large Organic, 6 Count", "Eggs Large Brown Grade A Non-GMO, 18 Count", "Emmi Imported Swiss Cheese", "Emmi Roth, Gruyere Young Cheese Deal, 6 Ounce", "English Cucumber", "Epic Beef Sea Salt Pepper Bites, Jerky, Whole30, 2.5 oz", "Epic Products, Chicken Jerky Sriracha Bites, 2.5 Ounce", "Expeller Pressed Cooking Oil, Avocado, 16.9 Fl Oz", "Expeller Pressed Non-Stick Cooking Spray, Avocado Oil, 5 Fl Oz", "Extra Large Peeled & Deveined White Shrimp (26/30 Count)", "FAGE Total Greek Yogurt, 5% Whole Milk, Plain, 32 oz", "FARMERS MARKET FOODS Organic Pumpkin Puree, 15 OZ", "Fage Total Greek Yogurt, 2%, Peach, 5.3 oz", "Fage Total Greek Yogurt, 2%, Strawberry, 5.3 oz", "Fage, Yogurt Total Greek Plain, 7 Ounce", "Farmer's Market Foods, Organic Canned Pumpkin, 15 Ounce", "Feta Crumbles, 6 Ounce", "Feta Value, 16 Ounce", "Fiorucci, Pepperoni", "Firehook Cracker Baked Sea Salt, 8 Oz", "Flour All Purpose Baking, 80 Ounce", "Food Coloring, 1.2 Fl Oz", "Fresh Fields, Turkey Breast Oven Roasted Charcuterie", "Fresh Mozzarella, 8 oz", "Freshpet, Dog Food Natures Fresh Chicken Recipe, 16 Ounce", "Freshpet, Dog Food Natures Fresh Turkey Recipe, 32 Ounce", "Frozen Blueberries, 12 OZ", "Frozen Scallop Sea Patagonian Msc, 12 Ounce", "Frozen, Blend Berry Organic, 32 Ounce", "Frozen, Blend Fruit Antioxidant, 16 Ounce", "Frozen, Bread Sandwich Sprouted Whole Wheat Organic, 22 Ounce", "Frozen, Cherries Dark Sweet Organic, 10 Ounce", "Frozen, Cherries Dark Sweet, 16 Ounce", "Frozen, Chunks Mango Organic, 10 Ounce", "Frozen, Chunks Mango, 16 Ounce", "Frozen, Original Tandoori Naan, 8.8 Ounce", "Frozen, Tortillas Flour Street, 11.85 Ounce", "Frozen, Whole Grain Tandoori Naan, 8.8 Ounce", "Fulvi, Pecorino Romano Grated", "GUITTARD Super Cookie Chocolate Chip Chunks, 10 OZ", "Gallon Spring Water", "Garbanzo Beans No Salt Added, 15.5 oz", "Gillians, Bread Crumbs, 12 Ounce", "Ginger Root Young Conventional, 1 Each", "Goat Cheese Crumbles, 6 Ounce", "Godinger Dublin Covered Butter Dish", "Good Culture Organic Classic Cottage Cheese, 16 oz", "Good Culture Pasture Raised Plain Cream Cheese, 7 oz", "Good Culture, Organic Cottage Cheese - Classic 4%, 5.3 Ounce", "Gotham Greens Butterhead Lettuce, 4.5 oz", "Gotham Greens Romaine Lettuce, 4.5 Ounce", "Gotham Greens, Salad Clam Green Leaf Crispy Conventional, 4.5 Ounce", "Graeter's, Ice Cream Black Raspberry Chocolate Chip, 16 Ounce", "Grape Green Seedless Organic, 16 Ounce", "Grape Red Seedless Conventional", "Grape Red Seedless Organic, 1 Bag (Brands May Vary)", "Grape Tomatoes (1 US Dry Pint), 1 Ounces", "Grape White Green Seedless Conventional", "Green & Black's, Organic Milk Chocolate Bar, 34% Cocoa, 3.5 oz", "Green Jalapeno Pepper Conventional, 0.25 Lb", "Green Jalapeno Pepper Conventional, 0.25lb (Brands May Vary)", "Green Kitchen Organic Garlic Puree, 2.8 Ounce", "Green Mountain Harvest, Herb Basil, 0.75 Ounce", "Green Peas, No Salt Added, 16 oz, (Frozen)", "Greenhouse Angel Sweet Grape Tomatoes, 1 pint", "Greens Kale Conventional, 1 Each (Brands May Vary)", "Greens Kale Dino Organic, 1 Bunch", "Greens Kale Multicolor Organic, 1 Each", "Greens, Red Chard Organic, 1 Bunch", "Grillo's Pickles Classic Dill Pickle Chips, 16oz", "Grillos Pickles, Pickle Chip Dill Italian, 16 Fl Oz", "Grillos Pickles, Pickle Dill Slice Sandwich Makers, 16 Fl Oz", "Ground Chicken, Step 2, 16 Ounce", "Guittard Baking Chips, 63% Extra Dark Chocolate, 11.5 oz", "Guittard, Semi Sweet Chocolate, 12 Ounce", "Gusto, Salami Genoa Sliced, 4 Ounce", "HERRELLS Original Hot Fudge Sauce, 10 OZ", "HERSHEY'S Miniatures Assorted Chocolate, Christmas Candy Bag, 17.1 oz", "HODGSON MILL Dry Active Yeast, 0.31 OZ", "Half And Half Organic, 16 Ounce", "Half And Half Organic, 32 Ounce", "Hearts Of Palm Salad Cut, 14.1 Ounce", "Heavy Cream Organic, 16 Ounce", "Heirloom Tomato", "Heirloom Tomato Organic, 1 Each", "Herb Basil Organic, 4 Ounce", "Herb Dill Organic, 1 Bunch", "Herb Oregano Organic, 0.75 Ounce", "Herb Rosemary Conventional, 0.75 Ounce", "Herb Sage Organic, 0.75 Ounce", "Honeycrisp Apple, 1 Each", "Horizon Organic Butter, Unsalted, 4 Sticks, 1 lb", "Horizon Organic, Low Fat Milk Chocolate Organic, 8 Fl Oz, 6 Pack", "Hot Dog Buns, Classic White (8 Buns), 15 Ounce", "Hot House Tomato Conventional, 1 Each", "Hummus Roasted Red Pepper, 8 Ounce", "Ice Cream Bar Salted Caramel Organic, 3 Fl Oz, 3 Count", "Ice Cream Barchoc Dip Vanilla Organic, 3 Count", "Iceberg Lettuce Organic, 1 Each", "Ithaca Cold Crafted, Hummus Lemon Garlic, 10 Ounce", "Ithaca Medium Salsa, Non-GMO, Minimal Ingredients, 14oz", "JENIS SPLENDID ICE CREAMS Boston Cream Pie Ice Cream, 1 PT", "Jacobs Farm, Herb Dill Organic, 1 Bunch", "Jarlsberg, Part-Skim Semi-Soft Cheese Wedge, 10 oz", "Juice Apple Organic, 64 Fl Oz", "Juice Orange No Pulp Not from Concentrate Organic, 59 Fl Oz", "Juice Orange Regular NFC, 64 Fl Oz", "Justin's, Peanut Butter Cups Dark Chocolate Mini Organic, 4.7 Ounce", "KATES BUTTER Homemade Unsalted Butter, 16 OZ", "KOIA Fruity Cereal Protein Beverage, 12 FZ", "Kale & Cheese Tortellini, 9 Ounce", "Kennesaw, Orange Juice Organic, 32 Fl Oz", "Kerrygold Butter Sticks, Salted, 8 oz", "Kerrygold Grass-fed Aged Irish Cheddar Cheese Sticks, 6 OZ", "Kerrygold Grass-fed Dubliner Irish Cheese Sticks, 6 OZ", "Kerrygold Naturally Softer Pure Irish Butter, 8 oz", "Kerrygold Unsalted Butter Sticks, 8 Ounce", "Kerrygold, Cheddar Dubliner, 7 Ounce", "Kettle & Fire Low Sodium Beef Broth, 32 OZ", "Kettle & Fire Organic Low Sodium Chicken Broth, 32 OZ", "Kettle Brand Potato Chips, Sea Salt & Vinegar, 5 oz", "Kettle Cuisine, Soup Mushroom Barley HSH, 24 Ounce", "Kettle Foods Chip Potato Sea Salt & Vinegar Organic, 5 oz", "Kettle Foods, Chips Chip Potato Sour Cream Onion, 5 Ounce", "Kettle Foods, Potato Chips Spicy Queso, 5 Ounce", "King Arthur Flour Unblchd All Purpose 32 OZ", "King Arthur, Flour Almond, 16 Ounce", "King Arthur, Special Bread Unbleached Flour, 5 lb", "KitchenAid Classic Ice Cream Scoop, One Size, Aqua Sky 2", "Kitchens Uncured Pepperoni Deli Pizza 16in, 43.3 OZ", "Kitchens, Nana's Chicken Noodle Soup, 24 Ounce", "Kiwi Organic, 1 Each", "LACTALIS Le Petit Brie", "LATE JULY Snacks Cl\u00e1sico Jalape\u00f1o Lime Tortilla Chips, 5.5 oz. Bag", "LORAC PRO Matte Lip Color, Peach", "La Tortilla Factory Organic White corn & Wheat Tortillas, 6 ct", "Large Hass Avocado", "Large San Francisco Sourdough", "Late July, Chip Tortilla Sea Salt & Lime, Organic, 11 Ounce", "Late July, Cracker Classic Rich Organic, 6 Ounce", "Lemon", "Lemon Italian Soda, 25.4 fl oz", "Lemon Meyer Conventional, 1 Each", "Lemon Reg Conventional, 1 Each", "Lemon Regular Organic, 1 Each", "Lemon Regular Organic, 1 Each (Brands May Vary)", "Lentils Green Organic, 16 Ounce", "Lettuce Romaine Conventional, 1 Each", "Lightlife Original Organic Tempeh 8 oz", "Lightlife, Tempeh Original Soy Organic, 8 Ounce", "Lime Key Conventional, 16 Ounce", "Little Sesame Smooth Classic Hummus, 8 Oz", "Love Me Tender Organic British Tenderstem Broccoli 200g", "Lucky Brand Women's Basel, Toffee, 8.5 M US", "Lundberg Family Farms, California White Jasmine Rice, 32 oz", "Lundberg Short Brown Eco-Farmed Rice, 32 oz", "MAPLEBROOK FARM Cow'S Milk Feta, 8 OZ", "MAPLEBROOK FARM Hand-Dipped Ricotta, 16 OZ", "MARIA & RICARDOS Whole Wheat Tortillas Plus 6 Inch, 7.9 OZ", "MEAT Mild Italian Pork Sausage", "MEAT Mild Italian Pork Sausage Bulk", "MILANO INDUSTRIES Grated Parmesan", "Maison Riviere Organic Ginger Puree, 2.8 OZ", "Mango Chunks, 16 OZ", "Mango Slices Organic, 8 Ounce", "Maplebrook Farm, Feta Crumbles, 8 Ounce", "Maplebrook Farm, Mozzarella Ball Fresh, 12 Ounce", "Maria & Ricardos Tortilla 6In Soft Yellow Corn, 11.57 oz", "Maria And Ricardos Organic White Flour Tortilla, 8 Inch, 8 Count", "Marin French Petite Camembert, 4 Oz", "Marinated Artichoke Quarters, 6.5 Ounce", "Martinellis, Cider Sparkling Apple Grape Organic, 25.4 Fl Oz", "Martinellis, Cider Sparkling Apple Pomegranate Organic, 25.4 Fl Oz", "Mascarpone, 8 oz", "Melon Watermelon Baby Seedless Conventional, 1 Each", "Mi Tierra, Tortilla Corn Organic, 10 Ounce", "Mild Italian Chicken Sausage", "Mild Italian Pork Sausage", "Milk 1% Organic Homogenized, 64 Fl Oz (Packaging May Vary)", "Milk 1%, 32 Fl Oz", "Milk 2% Organic Homogenized, 64 Fl Oz (Packaging May Vary)", "Milk 2%, 32 Fl Oz", "Milk Chocolate Pretzels, 5 oz", "Milk Fat Free, 32 Fl Oz", "Milk Whole Organic Homogenized, 64 Fl Oz (Packaging May Vary)", "Milk Whole, 32 Fl Oz", "Minced Garlic, 4.5 Ounce", "Mini Semi-Sweet Chocolate Baking Chips, 12 Ounce", "Miso Master, Red 1 Year Organic, 8 Ounce", "Mom's Chicken Soup, 24 Ounce", "Montebello Organic Penne Rigate, 1 lb", "Morrisons Carrot Batons 325g", "Mozzarella Ball, 8 Ounce", "Muir Glen Organic Tomato Puree, 28 Ounce", "Multi Pet Lamb Chop Dog Toy, 10\" [2-Pack]", "Mushroom Baby Bella Sliced Organic, 8 Ounce", "Mushroom Baby Bella, 8 Ounce", "Mushroom Cremini Brown Organic, 0.5lb", "Mushroom Shiitake Organic, 0.5lb", "Mushroom Shiitake Sliced Organic, 5 Ounce", "NATIVE FOREST Quartered Artichoke Hearts, 14 OZ", "NAVAJO PRIDE All Purpose Flour, 80 OZ", "NIMAN RANCH Pork Bratwurst, 12 OZ", "NORTH COUNTRY SMOKEHOUSE Fruitwood Smoked Bacon", "NUOVO PASTA Classic Italian Beef Ravioli, 9 OZ", "NUOVO PASTA Crab and Lobster Ravioli, 9 OZ", "Naan Tandoori Rustic White Mini, 7.1 Ounce", "Nana's Chicken Noodle Soup, 24 Ounce", "Nasoya, Extra Firm USDA Organic Tofu, 14 oz", "Nasoya, USDA Organic Firm Tofu, 14oz", "Native Forest, Coconut Milk Classic Organic, 13.5 Fl Oz", "Naturalissima, Sliced Prosciutto, 4 oz", "Nature Valley Fruit & Nut Chewy Trail Mix Granola Bars, 11.25 Ounce", "Nature's Bakery Blueberry Fig Bars, 2 Oz, 6 Ct", "Nature's Path Organic Granola, Honey Almond, 11 Oz Pouch", "Nature's Path Organic Rice Puffs Cereal, 6 oz", "NatureSweet, Cherubs Grape Tomatoes, 10 oz", "Neal's Yard Dairy, Keens Farmhouse Cheddar", "Near East, Rice Spanish, 6.75 Ounce", "Niman Ranch, Applewood Smoked Uncured Bacon, 12 oz", "North Country Smokehouse, Smoked Pork Bacon, 12 oz", "Nuggets Chickenless, 10.5 Ounce", "ONION YELLOW OG", "OREO Chocolate Sandwich Cookies, Party Size, 25.5 oz", "Ocean's Halo, Organic Ramen Noodles, Vegan, USDA Organic, 8.4 Ounce", "Oceans Halo, Noodle Ramen Organic, 8.4 Ounce", "Oil Vegetable Non Gmo, 32 Ounce", "Oil Vegetable, 32 Fl Oz", "Olipop 6/4 pack Ginger Ale 12oz Cans", "Olympiana, Feta Sheep Barrel Aged, 7 Ounce", "Once Upon A Farm Tractor Wheel Bar, Strawberry, Pumpkin & Beet", "One Mighty Mill, Bagel Cinnamon Raisin 4 Count, 16.8 Ounce", "Onion Green Scallion Conventional, 1 Bunch (Brands May Vary)", "Onion Red Bag Conventional, 32 Ounce", "Onion Sweet Conventional, 1 Each", "Onion Sweet Organic, 1 Each", "Onion White Conventional, 1 Each", "Orange Blood Bag, 32 Ounce", "Orange Cara Cara Bag Conventional, 48 Ounce", "Orange Navel Conventional, 1 Each", "Organic 1% Milk, 64 oz", "Organic 100% Juice from Concentrate, Cranberry, 32 Fl Oz", "Organic 50-50 Blend, Baby Spinach & Spring Mix, 16 Ounce", "Organic 50/50 Blend Baby Spinach & Spring Mix, 16 oz", "Organic Almond Butter, Creamy, 16 Ounce", "Organic Almond Milk, Original Flavor, Unsweetened, 32 fl oz", "Organic Apple Sauce, Unsweetened  (6 - 4 oz bowls), 24 oz", "Organic Baby Arugula Salad, 5 OZ", "Organic Baby Arugula Salad, 5 Ounce", "Organic Baby Arugula, 5 oz", "Organic Baby Arugula, 5 oz Clamshell", "Organic Baby Bella Whole Mushrooms, 8 Ounce", "Organic Baby Bok Choy", "Organic Baby Lettuce Salad Clamshell, 5 Ounce", "Organic Baby Spinach Salad, 5 Ounce", "Organic Banana Whole Trade Guarantee, 1 Each", "Organic Banana, 1 Each", "Organic Basil, 0.75 oz Clamshell", "Organic Bay Leaves, 0.15 oz", "Organic Beef Jerky, Teriyaki, 3 oz", "Organic Berry Blend, 10 oz, (Frozen)", "Organic Black Tea (70 Tea Bags), 4.9 oz", "Organic Blue Corn Lightly Salted Tortilla Chips, 16 Ounce", "Organic Blueberry Cereal Bar 6 Count, 7.8 Ounce", "Organic Boneless Skinless Chicken Breast", "Organic Bosc Pear", "Organic Bread Baguette Rustic, 11 Ounce", "Organic Broccoli Florets, 16 oz, (Frozen)", "Organic Broccoli, 1 Each", "Organic Broth, Beef, 32 Fl Oz", "Organic Butter And Garlic Croutons, 4.5 OZ", "Organic Butter Unsalted, 1 lb", "Organic Caesar Croutons, 4.5 Ounce", "Organic Cane Sugar, 32 oz", "Organic Canola Oil, 16 fl oz", "Organic Capers, Non-Pareil, DR WT 2 Ounce", "Organic Cara Cara Orange, 1 Each", "Organic Carrot Chips, 16 Oz", "Organic Carrot Sticks, 12 Ounce", "Organic Carrot, 0.5lb", "Organic Carrots, 1 lb", "Organic Cavatelli, 16 oz", "Organic Celery", "Organic Celery Sticks, 8 Ounce", "Organic Cheese Bar, Pepper Jack, 8 Ounce (Packaging May Vary)", "Organic Chocolate Bar, Milk Chocolate, 3 Ounce", "Organic Chocolate Truffles, 7 OZ", "Organic Chocolate Vanilla Ice Cream Bars, 3 ct, (Frozen)", "Organic Chopped Garlic, 4.25 oz Jar", "Organic Coleslaw Mix, 12 Ounce", "Organic Coleslaw Mix, 12 oz", "Organic Condensed Milk, Sweetened, 14 oz", "Organic Cream Cheese Bar, 8 Ounce", "Organic Creamy Almond Butter, 16 Ounce", "Organic Creamy Peanut Butter No Salt Added, 16 OZ", "Organic Creamy Peanut Butter Unsweeteend & No Salt, 16 Ounce", "Organic Creamy Peanut Butter, 16 oz", "Organic Creamy Peanut Butter, Unsweetened, 16 oz", "Organic Dark Chocolate Bar, 3 Ounce (Packaging May Vary)", "Organic Dijon Mustard, 8 oz", "Organic Dill, .75 oz", "Organic Distilled White Vinegar, 32 fl oz", "Organic Dried Mango, 8 Ounce", "Organic Early Bird Bread, 22 Ounce", "Organic English Seedless Cucumber", "Organic English Seedless Cucumber, 1 Each", "Organic Farfalle, 16 Ounce", "Organic Fat Low Fat Milk, 32 Ounce (Packaging May Vary)", "Organic Fingerling Potatoes, 24 oz", "Organic Flour & Corn Tortillas, 10.5 Ounce", "Organic Flour Tortillas, 6 ct", "Organic Fresh Goat Cheese, 4 oz", "Organic Garbanzo Bean No Salt Added, 13.4 oz", "Organic Garlic Ali (3 Bulbs), 3 ct (us)", "Organic Ginger Root", "Organic Girl,Salad Baby Spinach, 5 Oz Clamshell", "Organic Gold Potato", "Organic Golden Round Crackers, 12 OZ", "Organic Grade A Heavy Cream, 16 Ounce (Packaging May Vary)", "Organic Grade A Milk, Lowfat, 64 Fl Oz", "Organic Grade A Milk, Whole, 32 Fl Oz", "Organic Great Northern Beans, 15 oz", "Organic Greek Whole Milk Yogurt, Plain, 5.3 oz", "Organic Green Asparagus", "Organic Green Cabbage", "Organic Green Kiwi, 16 Oz", "Organic Ground Chicken, Step 3, 16 Ounce", "Organic Halves & Pieces Walnuts, 10 Ounce", "Organic Heavy Cream, 16 Fl Oz", "Organic Honey Graham Crackers, 14.4 oz", "Organic Honeycrisp Apple", "Organic Italian Farro, 8.8 Ounce", "Organic Italian Parsley, 1 Bunch", "Organic Jalape\u00f1o Hot Sauce, 5 fl oz", "Organic Lasagne, 16 Ounce", "Organic Lemon", "Organic Lemon Regular, 1 Each", "Organic Lemonade, 32 FZ", "Organic Light Brown Sugar, 24 Ounce", "Organic Light Brown Sugar, 24 oz", "Organic Light Coconut Milk, 13.5 fl oz", "Organic Low Sodium Chicken Broth , 32 fl oz", "Organic Marinara Pasta Sauce, 25 Ounce", "Organic Mild Cheddar Slices, 12 Ounce", "Organic Mixed Berry Cereal Bar 6 Count, 7.8 Ounce", "Organic Mozzarella String Cheese, 8 OZ"];
 
-# Now inject the pantry data
-cat /home/claude/pantry_data.js >> /home/claude/dinner_planner.html
+let pantry=[], saved=[], apiKey='';
 
-cat << 'JSEOF' >> /home/claude/dinner_planner.html
-
-// ── State ──
-let pantry = [];
-let saved = [];
-let apiKey = '';
-
-// ── Init ──
-function init() {
-  apiKey = localStorage.getItem('dp-api-key') || '';
-  const raw = localStorage.getItem('dp-pantry');
-  pantry = raw ? JSON.parse(raw) : [...PANTRY_DEFAULTS];
-  const rawS = localStorage.getItem('dp-saved');
-  saved = rawS ? JSON.parse(rawS) : [];
+function init(){
+  apiKey=localStorage.getItem('dp-key')||'';
+  try{pantry=JSON.parse(localStorage.getItem('dp-pantry'))||[...PANTRY_DEFAULTS];}catch(e){pantry=[...PANTRY_DEFAULTS];}
+  try{saved=JSON.parse(localStorage.getItem('dp-saved'))||[];}catch(e){saved=[];}
   updateApiUI();
-  updateHeaderCount();
-  renderPantry();
-  renderSaved();
+  document.getElementById('hdr-count').textContent=pantry.length+' items in your pantry history';
+  renderPantry(); renderSaved();
 }
 
-function savePantry() {
-  localStorage.setItem('dp-pantry', JSON.stringify(pantry));
-  updateHeaderCount();
-  renderPantry();
-}
-function saveSaved() {
-  localStorage.setItem('dp-saved', JSON.stringify(saved));
-  renderSaved();
+function togglePanel(){
+  var p=document.getElementById('api-panel');
+  var opening=!p.classList.contains('open');
+  p.classList.toggle('open');
+  if(opening){document.getElementById('api-input').value=apiKey; setTimeout(function(){document.getElementById('api-input').focus();},50);}
 }
 
-// ── API key ──
-function openApiModal() {
-  document.getElementById('api-key-input').value = apiKey;
-  document.getElementById('api-modal').style.display = 'flex';
-}
-function closeApiModal() { document.getElementById('api-modal').style.display = 'none'; }
-function saveApiKey() {
-  apiKey = document.getElementById('api-key-input').value.trim();
-  localStorage.setItem('dp-api-key', apiKey);
-  updateApiUI();
-  closeApiModal();
-}
-function updateApiUI() {
-  const dot = document.getElementById('api-dot');
-  const label = document.getElementById('api-label');
-  const strip = document.getElementById('share-strip');
-  if (apiKey) {
-    dot.className = 'api-dot connected';
-    label.textContent = 'AI connected';
-    strip.style.display = 'none';
-  } else {
-    dot.className = 'api-dot';
-    label.textContent = 'Set up AI';
-    strip.style.display = 'flex';
-  }
+function saveKey(){
+  var v=document.getElementById('api-input').value.trim();
+  if(!v){alert('Please paste your API key first.');return;}
+  apiKey=v; localStorage.setItem('dp-key',apiKey);
+  updateApiUI(); document.getElementById('api-panel').classList.remove('open');
 }
 
-// ── Tab switching ──
-function switchTab(name, el) {
-  ['ideas','saved','pantry'].forEach(t => {
-    document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
-  });
-  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-  if (el) el.classList.add('active');
+function updateApiUI(){
+  var dot=document.getElementById('api-dot'), lbl=document.getElementById('api-lbl'), strip=document.getElementById('no-key');
+  if(apiKey){dot.className='dot on';lbl.textContent='AI connected';strip.style.display='none';}
+  else{dot.className='dot';lbl.textContent='Set up AI';strip.style.display='flex';}
 }
 
-// ── Header count ──
-function updateHeaderCount() {
-  document.getElementById('pantry-count-header').textContent = pantry.length + ' items in your pantry history';
+function switchTab(name,el){
+  ['ideas','saved','pantry'].forEach(function(t){document.getElementById('tab-'+t).style.display=t===name?'block':'none';});
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('active');});
+  if(el) el.classList.add('active');
 }
 
-// ── Recipe ideas ──
-function findRelevant(text) {
-  const words = text.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-  const scored = pantry.map(item => {
-    const il = item.toLowerCase();
-    let score = 0;
-    words.forEach(w => { if (il.includes(w)) score += 3; });
-    return { item, score };
-  }).filter(x => x.score > 0).sort((a, b) => b.score - a.score).slice(0, 50).map(x => x.item);
-  const base = pantry.slice(0, 40);
-  return [...new Set([...scored, ...base])].slice(0, 80);
+function findRelevant(text){
+  var words=text.toLowerCase().split(/\s+/).filter(function(w){return w.length>3;});
+  var scored=pantry.map(function(item){
+    var il=item.toLowerCase(), s=0;
+    words.forEach(function(w){if(il.includes(w))s+=3;});
+    return{item:item,s:s};
+  }).filter(function(x){return x.s>0;}).sort(function(a,b){return b.s-a.s;}).slice(0,50).map(function(x){return x.item;});
+  var combined=[...new Set([...scored,...pantry.slice(0,40)])];
+  return combined.slice(0,80);
 }
 
-async function getRecipes() {
-  const text = document.getElementById('idea-input').value.trim();
-  if (!text) return;
-  if (!apiKey) { openApiModal(); return; }
-
-  document.getElementById('find-btn').disabled = true;
-  document.getElementById('find-btn').textContent = 'Looking…';
-  document.getElementById('loading-state').style.display = 'block';
-  document.getElementById('error-msg').style.display = 'none';
-  document.getElementById('suggestions-container').innerHTML = '';
-
-  const relevant = findRelevant(text);
-  const prompt = `You are a helpful dinner recipe assistant for a family. They have ordered these groceries in the past (their pantry history):
-
-${relevant.join(', ')}
-
-They want: "${text}"
-
-Suggest exactly 2 dinner recipes using items from their pantry. For each recipe, choose ingredients they likely already have.
-
-Return ONLY a JSON array with exactly 2 objects. Each object:
-{
-  "title": "Recipe Name",
-  "description": "1-2 sentence description of the dish",
-  "prepTime": "X mins",
-  "cookTime": "X mins",
-  "ingredients": [{"name": "ingredient name", "inPantry": true or false}],
-  "steps": ["Step 1...", "Step 2...", ...]
-}
-
-JSON only, no other text.`;
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1200,
-        messages: [{ role: 'user', content: prompt }]
-      })
+async function getRecipes(){
+  var text=document.getElementById('idea-input').value.trim();
+  if(!text)return;
+  if(!apiKey){togglePanel();return;}
+  var btn=document.getElementById('find-btn');
+  btn.disabled=true; btn.textContent='Looking…';
+  document.getElementById('load-el').style.display='block';
+  document.getElementById('err-el').style.display='none';
+  document.getElementById('sug-el').innerHTML='';
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1400,messages:[{role:'user',content:
+        'You are a dinner recipe assistant for a family. Their grocery order history (pantry): '+findRelevant(text).join(', ')+
+        '. They want: "'+text.replace(/"/g,"'")+
+        '". Suggest exactly 2 dinner recipes using mostly pantry items. Return ONLY a JSON array of 2 objects each with: title, description, prepTime, cookTime, ingredients (array of {name, inPantry: true/false}), steps (array of strings). Nothing else, just the raw JSON array.'
+      }]})
     });
-    if (!res.ok) throw new Error('API error ' + res.status);
-    const data = await res.json();
-    let raw = data.content?.find(c => c.type === 'text')?.text || '';
-    raw = raw.replace(/```json|```/g, '').trim();
-    const recipes = JSON.parse(raw);
-    renderSuggestions(recipes);
-  } catch(e) {
-    const msg = document.getElementById('error-msg');
-    msg.style.display = 'block';
-    msg.textContent = e.message.includes('401')
-      ? 'Invalid API key. Click "Set up AI" to update it.'
-      : 'Could not load recipes. Please try again. (' + e.message + ')';
+    if(!res.ok){var e=await res.json().catch(function(){return{};});throw new Error(e.error&&e.error.message||'HTTP '+res.status);}
+    var data=await res.json();
+    var raw=(data.content&&data.content.find(function(c){return c.type==='text';}))||{text:''};
+    var txt=raw.text.replace(/```json|```/g,'').trim();
+    var idx=txt.indexOf('['); if(idx>0) txt=txt.slice(idx);
+    renderSuggestions(JSON.parse(txt));
+  }catch(e){
+    var el=document.getElementById('err-el');
+    el.style.display='block';
+    el.textContent=e.message.includes('401')?'Invalid API key. Click "Set up AI" to update it.':'Could not load recipes: '+e.message;
   }
-
-  document.getElementById('loading-state').style.display = 'none';
-  document.getElementById('find-btn').disabled = false;
-  document.getElementById('find-btn').textContent = 'Find recipes';
+  document.getElementById('load-el').style.display='none';
+  btn.disabled=false; btn.textContent='Find recipes';
 }
 
-// ── Render suggestions ──
-function inPantry(name) {
-  const nl = name.toLowerCase();
-  return pantry.some(p => {
-    const pl = p.toLowerCase();
-    const key = pl.replace(/,.*/, '').replace(/\d.*/, '').trim();
-    return key.length > 4 && nl.includes(key);
-  });
+function pantryMatch(name){
+  var nl=name.toLowerCase();
+  return pantry.some(function(p){var k=p.toLowerCase().replace(/,.*$/,'').replace(/\d.*$/,'').trim();return k.length>4&&nl.includes(k);});
 }
 
-function renderSuggestions(recipes) {
-  const c = document.getElementById('suggestions-container');
-  c.innerHTML = recipes.map((r, i) => `
-    <div class="card-recipe" id="sug-${i}">
-      <div class="recipe-header">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
-          <div style="flex:1">
-            <div class="recipe-title">${esc(r.title)}</div>
-            <div class="recipe-desc mt8">${esc(r.description)}</div>
-            <div class="meta-tags">
-              ${r.prepTime ? `<span class="tag tag-gray">⏱ Prep ${esc(r.prepTime)}</span>` : ''}
-              ${r.cookTime ? `<span class="tag tag-gray">🍳 Cook ${esc(r.cookTime)}</span>` : ''}
-              <span class="tag tag-green">${r.ingredients.filter(ig => ig.inPantry || inPantry(ig.name)).length}/${r.ingredients.length} in pantry</span>
-            </div>
-          </div>
-          <button class="btn btn-sm btn-primary" id="save-btn-${i}" onclick="saveFromSuggestion(${i}, this)" style="flex-shrink:0;margin-top:2px">Save</button>
-        </div>
-      </div>
-      <div class="recipe-body">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;flex-wrap:wrap">
-          <div>
-            <div class="label mb6">Ingredients</div>
-            <ul class="ingredient-list">
-              ${r.ingredients.map(ig => {
-                const has = ig.inPantry || inPantry(ig.name);
-                return `<li class="ingredient-item">
-                  <span class="check-icon ${has ? 'check-yes' : 'check-no'}">${has ? '✓' : '+'}</span>
-                  <span style="color:${has ? 'var(--ink)' : 'var(--ink-muted)'}">${esc(ig.name)}</span>
-                </li>`;
-              }).join('')}
-            </ul>
-          </div>
-          <div>
-            <button class="accordion-toggle" onclick="toggleSteps(${i})" id="steps-toggle-${i}">
-              <span>Instructions</span>
-              <span class="accordion-arrow" id="arrow-${i}">▼</span>
-            </button>
-            <ol class="steps-list" id="steps-${i}" style="margin-top:10px;display:none">
-              ${r.steps.map((s, si) => `
-                <li class="step-item">
-                  <span class="step-num">${si+1}</span>
-                  <span>${esc(s)}</span>
-                </li>`).join('')}
-            </ol>
-          </div>
-        </div>
-      </div>
-    </div>
-  `).join('');
-  window._currentSuggestions = recipes;
-}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-function toggleSteps(i) {
-  const el = document.getElementById('steps-' + i);
-  const arrow = document.getElementById('arrow-' + i);
-  const open = el.style.display !== 'none';
-  el.style.display = open ? 'none' : 'block';
-  arrow.className = 'accordion-arrow' + (open ? '' : ' open');
-}
-
-function saveFromSuggestion(i, btn) {
-  const r = window._currentSuggestions[i];
-  if (!r) return;
-  const record = { ...r, id: Date.now(), savedAt: new Date().toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}), rating: 0, note: '' };
-  saved = [record, ...saved];
-  saveSaved();
-  btn.textContent = 'Saved ✓';
-  btn.className = 'btn btn-sm';
-  btn.disabled = true;
-}
-
-// ── Saved recipes ──
-function renderSaved() {
-  const c = document.getElementById('saved-container');
-  const title = document.getElementById('saved-count-title');
-  title.textContent = saved.length > 0 ? `${saved.length} Saved Recipe${saved.length > 1 ? 's' : ''}` : 'Saved Recipes';
-  if (saved.length === 0) {
-    c.innerHTML = `<div class="empty-state"><div class="empty-icon">📖</div><div class="empty-title">No saved recipes yet</div><div class="text-muted">Save recipes from the Ideas tab to build your collection</div></div>`;
-    return;
-  }
-  c.innerHTML = saved.map((r, i) => `
-    <div class="card-recipe">
-      <div class="recipe-header">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
-          <div style="flex:1">
-            <div class="recipe-title">${esc(r.title)}</div>
-            <div style="display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap">
-              <div class="stars" id="stars-${i}">${[1,2,3,4,5].map(n=>`<span class="star${r.rating>=n?' on':''}" onclick="rateSaved(${i},${n})">★</span>`).join('')}</div>
-              <span class="saved-date">Saved ${esc(r.savedAt)}</span>
-            </div>
-          </div>
-          <button class="btn btn-sm btn-ghost" onclick="deleteSaved(${i})">Remove</button>
-        </div>
-      </div>
-      <div class="recipe-body">
-        <div class="recipe-desc mb12">${esc(r.description)}</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-          ${r.prepTime ? `<span class="tag tag-gray">⏱ Prep ${esc(r.prepTime)}</span>` : ''}
-          ${r.cookTime ? `<span class="tag tag-gray">🍳 Cook ${esc(r.cookTime)}</span>` : ''}
-        </div>
-        <div class="divider"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-          <div>
-            <div class="label mb6">Ingredients</div>
-            <ul class="ingredient-list">
-              ${(r.ingredients||[]).map(ig=>`<li class="ingredient-item"><span style="color:var(--ink-muted)">—</span><span>${esc(ig.name)}</span></li>`).join('')}
-            </ul>
-          </div>
-          <div>
-            <div class="label mb6">Instructions</div>
-            <ol class="steps-list">
-              ${(r.steps||[]).map((s,si)=>`<li class="step-item"><span class="step-num">${si+1}</span><span>${esc(s)}</span></li>`).join('')}
-            </ol>
-          </div>
-        </div>
-        <div class="divider"></div>
-        <div class="label mb6">Notes & tweaks</div>
-        <textarea onchange="updateNote(${i}, this.value)" placeholder="Add your notes, variations, ratings from the family..." style="font-size:13px">${esc(r.note||'')}</textarea>
-      </div>
-    </div>
-  `).join('');
-}
-
-function rateSaved(i, rating) {
-  saved[i].rating = rating;
-  saveSaved();
-}
-function deleteSaved(i) {
-  if (!confirm('Remove this recipe?')) return;
-  saved.splice(i, 1);
-  saveSaved();
-}
-function updateNote(i, val) {
-  saved[i].note = val;
-  localStorage.setItem('dp-saved', JSON.stringify(saved));
-}
-
-// ── Pantry ──
-function renderPantry() {
-  const search = (document.getElementById('pantry-search')?.value || '').toLowerCase();
-  const filtered = pantry.filter(item => item.toLowerCase().includes(search));
-  document.getElementById('pantry-count').textContent = `${filtered.length} / ${pantry.length} items`;
-  document.getElementById('pantry-grid').innerHTML = filtered.map(item => {
-    const idx = pantry.indexOf(item);
-    return `<div class="pantry-item" title="${esc(item)}">
-      <span>${esc(item)}</span>
-      <button class="pantry-remove" onclick="removePantryItem(${idx})">×</button>
-    </div>`;
+function renderSuggestions(recipes){
+  window._sugs=recipes;
+  document.getElementById('sug-el').innerHTML=recipes.map(function(r,i){
+    var ingHtml=r.ingredients.map(function(ig){
+      var h=ig.inPantry||pantryMatch(ig.name);
+      return '<li class="ing"><span class="ck '+(h?'ck-y':'ck-n')+'">'+(h?'&#10003;':'+')+
+        '</span><span style="color:'+(h?'var(--ink)':'var(--inkm)')+'">'+esc(ig.name)+'</span></li>';
+    }).join('');
+    var inCount=r.ingredients.filter(function(ig){return ig.inPantry||pantryMatch(ig.name);}).length;
+    return '<div class="rcard">'+
+      '<div class="rhdr"><div class="row" style="align-items:flex-start;gap:12px">'+
+      '<div style="flex:1"><div class="rtitle">'+esc(r.title)+'</div>'+
+      '<div class="rdesc mt8">'+esc(r.description)+'</div>'+
+      '<div class="meta">'+
+      (r.prepTime?'<span class="tag tag-n">Prep '+esc(r.prepTime)+'</span>':'')+
+      (r.cookTime?'<span class="tag tag-n">Cook '+esc(r.cookTime)+'</span>':'')+
+      '<span class="tag tag-g">'+inCount+'/'+r.ingredients.length+' in pantry</span>'+
+      '</div></div>'+
+      '<button class="btn btn-p btn-sm" id="sb'+i+'" onclick="saveSug('+i+',this)" style="flex-shrink:0;margin-top:4px">Save</button>'+
+      '</div></div>'+
+      '<div class="rbody"><div class="g2" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">'+
+      '<div><div class="lbl mb8">Ingredients</div><ul class="ings">'+ingHtml+'</ul></div>'+
+      '<div><button style="background:none;border:none;font-size:13px;color:var(--inkm);cursor:pointer;padding:0;font-family:inherit" onclick="toggleSteps('+i+',this)">Show instructions &#9660;</button>'+
+      '<ol class="steplist" id="steps-'+i+'" style="display:none;margin-top:10px">'+
+      r.steps.map(function(s,si){return'<li class="step"><span class="snum">'+(si+1)+'</span><span>'+esc(s)+'</span></li>';}).join('')+
+      '</ol></div></div></div></div>';
   }).join('');
 }
 
-function addPantryItem() {
-  const val = document.getElementById('new-item-input').value.trim();
-  if (!val) return;
-  pantry = [val, ...pantry];
-  savePantry();
-  document.getElementById('new-item-input').value = '';
+function toggleSteps(i,btn){
+  var el=document.getElementById('steps-'+i), open=el.style.display!=='none';
+  el.style.display=open?'none':'block';
+  btn.innerHTML=open?'Show instructions &#9660;':'Hide instructions &#9650;';
 }
 
-function removePantryItem(i) {
-  pantry.splice(i, 1);
-  savePantry();
+function saveSug(i,btn){
+  var r=window._sugs[i];
+  saved=[Object.assign({},r,{id:Date.now(),savedAt:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),rating:0,note:''})].concat(saved);
+  localStorage.setItem('dp-saved',JSON.stringify(saved));
+  renderSaved(); btn.textContent='Saved ✓'; btn.className='btn btn-sm'; btn.disabled=true;
 }
 
-// ── Export / Import ──
-function exportData() {
-  const data = { pantry, saved, exportedAt: new Date().toISOString(), version: 1 };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'dinner-planner-' + new Date().toISOString().slice(0,10) + '.json';
-  a.click();
+function renderSaved(){
+  document.getElementById('saved-title').textContent=saved.length?saved.length+' Saved Recipe'+(saved.length>1?'s':''):'Saved Recipes';
+  var c=document.getElementById('saved-el');
+  if(!saved.length){c.innerHTML='<div class="empty"><div class="eico">&#128214;</div><div class="etitle">No saved recipes yet</div><div class="muted">Save recipes from the Ideas tab to build your collection</div></div>';return;}
+  c.innerHTML=saved.map(function(r,i){
+    var ingHtml=(r.ingredients||[]).map(function(ig){return'<li class="ing"><span style="color:var(--inkm)">&#8212;</span><span>'+esc(ig.name)+'</span></li>';}).join('');
+    var stepHtml=(r.steps||[]).map(function(s,si){return'<li class="step"><span class="snum">'+(si+1)+'</span><span>'+esc(s)+'</span></li>';}).join('');
+    var starsHtml=[1,2,3,4,5].map(function(n){return'<button class="star'+(r.rating>=n?' on':'')+'" onclick="rate('+i+','+n+')">&#9733;</button>';}).join('');
+    return '<div class="rcard">'+
+      '<div class="rhdr"><div class="row" style="align-items:flex-start;gap:12px">'+
+      '<div style="flex:1"><div class="rtitle">'+esc(r.title)+'</div>'+
+      '<div class="row mt8" style="gap:10px;flex-wrap:wrap"><div class="stars">'+starsHtml+'</div><span class="sdate">Saved '+esc(r.savedAt)+'</span></div></div>'+
+      '<button class="btn btn-g btn-sm" onclick="delSaved('+i+')">Remove</button>'+
+      '</div></div>'+
+      '<div class="rbody"><div class="rdesc mb12">'+esc(r.description)+'</div>'+
+      '<div class="meta mb12">'+
+      (r.prepTime?'<span class="tag tag-n">Prep '+esc(r.prepTime)+'</span>':'')+
+      (r.cookTime?'<span class="tag tag-n">Cook '+esc(r.cookTime)+'</span>':'')+
+      '</div><div class="divider"></div>'+
+      '<div class="g2" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">'+
+      '<div><div class="lbl mb8">Ingredients</div><ul class="ings">'+ingHtml+'</ul></div>'+
+      '<div><div class="lbl mb8">Instructions</div><ol class="steplist">'+stepHtml+'</ol></div>'+
+      '</div><div class="divider"></div>'+
+      '<div class="lbl mb8">Notes &amp; tweaks</div>'+
+      '<textarea onchange="updateNote('+i+',this.value)" placeholder="Family notes, variations, what you'd change next time...">'+esc(r.note||'')+'</textarea>'+
+      '</div></div>';
+  }).join('');
 }
 
-function importData(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      if (data.pantry) pantry = data.pantry;
-      if (data.saved) saved = data.saved;
-      savePantry();
-      saveSaved();
-      alert('Imported successfully! ' + (data.pantry?.length || 0) + ' pantry items and ' + (data.saved?.length || 0) + ' saved recipes.');
-    } catch(err) {
-      alert('Could not read file. Make sure it is a valid Dinner Planner export.');
-    }
+function rate(i,v){saved[i].rating=v;localStorage.setItem('dp-saved',JSON.stringify(saved));renderSaved();}
+function delSaved(i){if(!confirm('Remove this recipe?'))return;saved.splice(i,1);localStorage.setItem('dp-saved',JSON.stringify(saved));renderSaved();}
+function updateNote(i,v){saved[i].note=v;localStorage.setItem('dp-saved',JSON.stringify(saved));}
+
+function renderPantry(){
+  var q=(document.getElementById('p-search')&&document.getElementById('p-search').value||'').toLowerCase();
+  var f=pantry.filter(function(p){return p.toLowerCase().includes(q);});
+  document.getElementById('p-count').textContent=f.length+(q?' of ':' / ')+pantry.length+' items';
+  document.getElementById('p-grid').innerHTML=f.map(function(item){
+    var idx=pantry.indexOf(item);
+    return'<div class="pi" title="'+esc(item)+'"><span>'+esc(item)+'</span><button class="prm" onclick="removeItem('+idx+')">&#215;</button></div>';
+  }).join('');
+}
+
+function addItem(){
+  var v=document.getElementById('new-item').value.trim(); if(!v)return;
+  pantry=[v].concat(pantry); localStorage.setItem('dp-pantry',JSON.stringify(pantry));
+  document.getElementById('hdr-count').textContent=pantry.length+' items in your pantry history';
+  document.getElementById('new-item').value=''; renderPantry();
+}
+function removeItem(i){pantry.splice(i,1);localStorage.setItem('dp-pantry',JSON.stringify(pantry));renderPantry();}
+
+function exportData(){
+  var blob=new Blob([JSON.stringify({pantry:pantry,saved:saved,version:1,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='dinner-planner-'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+}
+function importData(e){
+  var file=e.target.files[0]; if(!file)return;
+  var r=new FileReader();
+  r.onload=function(ev){
+    try{
+      var d=JSON.parse(ev.target.result);
+      if(d.pantry){pantry=d.pantry;localStorage.setItem('dp-pantry',JSON.stringify(pantry));}
+      if(d.saved){saved=d.saved;localStorage.setItem('dp-saved',JSON.stringify(saved));}
+      document.getElementById('hdr-count').textContent=pantry.length+' items in your pantry history';
+      renderPantry(); renderSaved();
+      alert('Imported: '+pantry.length+' pantry items and '+saved.length+' saved recipes.');
+    }catch(err){alert('Could not read file.');}
   };
-  reader.readAsText(file);
-  e.target.value = '';
+  r.readAsText(file); e.target.value='';
 }
 
-// ── Utility ──
-function esc(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── Keyboard shortcut (Cmd/Ctrl+Enter to search) ──
-document.addEventListener('keydown', e => {
-  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-    const focused = document.activeElement;
-    if (focused && focused.id === 'idea-input') getRecipes();
-  }
-});
-
+document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key==='Enter'&&document.activeElement&&document.activeElement.id==='idea-input')getRecipes();});
 init();
 </script>
 </body>
 </html>
-JSEOF
-echo "Done. File size: $(wc -c < /home/claude/dinner_planner.html) bytes"
