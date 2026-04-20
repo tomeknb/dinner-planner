@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Dinner Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #FAF7F2;
+    --warm-white: #FFFEFB;
+    --ink: #1C1A18;
+    --ink-light: #4A4540;
+    --ink-muted: #8C8680;
+    --terracotta: #C0603A;
+    --terracotta-light: #E8977A;
+    --terracotta-pale: #F5E8E2;
+    --sage: #6B8C6B;
+    --sage-pale: #EBF0EB;
+    --border: #E4DDD6;
+    --border-strong: #C8BFB5;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(28,26,24,0.08);
+    --shadow-md: 0 4px 24px rgba(28,26,24,0.12);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── Layout ── */
+  .app { max-width: 860px; margin: 0 auto; padding: 0 20px 60px; }
+
+  /* ── Header ── */
+  .header {
+    padding: 36px 0 28px;
+    border-bottom: 1.5px solid var(--border);
+    margin-bottom: 28px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .header-left { }
+  .header-eyebrow {
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--terracotta);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .header-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 34px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.15;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin-top: 4px;
+  }
+  .api-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--ink-light);
+    background: var(--warm-white);
+    transition: border-color .15s;
+  }
+  .api-pill:hover { border-color: var(--terracotta); }
+  .api-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); flex-shrink: 0; }
+  .api-dot.connected { background: var(--sage); }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1.5px solid var(--border);
+    margin-bottom: 28px;
+  }
+  .tab {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--ink-muted);
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1.5px;
+    transition: color .15s, border-color .15s;
+    font-family: 'DM Sans', sans-serif;
+    white-space: nowrap;
+  }
+  .tab.active { color: var(--terracotta); border-bottom-color: var(--terracotta); font-weight: 500; }
+  .tab:hover:not(.active) { color: var(--ink); }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--warm-white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .card-recipe {
+    background: var(--warm-white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: box-shadow .2s;
+  }
+  .card-recipe:hover { box-shadow: var(--shadow); }
+  .recipe-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .recipe-body { padding: 16px 24px 20px; }
+
+  /* ── Form elements ── */
+  input, textarea, select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--warm-white);
+    font-family: 'DM Sans', sans-serif;
+    transition: border-color .15s;
+    outline: none;
+  }
+  input:focus, textarea:focus { border-color: var(--terracotta); }
+  input::placeholder, textarea::placeholder { color: var(--ink-muted); }
+  textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+
+  /* ── Buttons ── */
+  button { cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border-strong);
+    background: transparent;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 400;
+    transition: all .15s;
+  }
+  .btn:hover { background: var(--cream); border-color: var(--ink-light); }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary {
+    background: var(--terracotta);
+    color: white;
+    border-color: var(--terracotta);
+    font-weight: 500;
+  }
+  .btn-primary:hover { background: #A8502E; border-color: #A8502E; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-sm { padding: 6px 14px; font-size: 13px; }
+  .btn-ghost { border-color: transparent; color: var(--ink-muted); }
+  .btn-ghost:hover { background: var(--cream); border-color: var(--border); color: var(--ink); }
+
+  /* ── Typography ── */
+  .label { font-size: 12px; color: var(--ink-muted); margin-bottom: 6px; font-weight: 500; letter-spacing: .03em; text-transform: uppercase; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 500; margin-bottom: 12px; }
+  .recipe-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 500; line-height: 1.3; margin-bottom: 6px; }
+  .recipe-desc { font-size: 14px; color: var(--ink-light); line-height: 1.6; }
+  .meta-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 400;
+  }
+  .tag-warm { background: var(--terracotta-pale); color: var(--terracotta); }
+  .tag-green { background: var(--sage-pale); color: var(--sage); }
+  .tag-gray { background: var(--cream); color: var(--ink-muted); border: 1px solid var(--border); }
+
+  /* ── Ingredients ── */
+  .ingredient-list { list-style: none; }
+  .ingredient-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--cream);
+    font-size: 14px;
+  }
+  .ingredient-item:last-child { border-bottom: none; }
+  .check-icon {
+    width: 18px; height: 18px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; flex-shrink: 0; font-weight: 500;
+  }
+  .check-yes { background: var(--sage-pale); color: var(--sage); }
+  .check-no { background: var(--cream); color: var(--ink-muted); border: 1px solid var(--border); }
+
+  /* ── Steps ── */
+  .steps-list { list-style: none; }
+  .step-item { display: flex; gap: 12px; padding: 6px 0; font-size: 14px; line-height: 1.6; }
+  .step-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--terracotta-pale); color: var(--terracotta);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; flex-shrink: 0; margin-top: 1px;
+  }
+
+  /* ── Stars ── */
+  .stars { display: flex; gap: 2px; }
+  .star { font-size: 20px; cursor: pointer; color: var(--border-strong); transition: color .1s; line-height: 1; }
+  .star.on { color: #D4900A; }
+  .star:hover { color: #D4900A; }
+
+  /* ── Pantry grid ── */
+  .pantry-search-row { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+  .pantry-count { font-size: 12px; color: var(--ink-muted); white-space: nowrap; }
+  .pantry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 6px;
+    max-height: 360px;
+    overflow-y: auto;
+    padding: 2px;
+  }
+  .pantry-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 5px 8px 5px 10px;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: var(--ink-light);
+    gap: 4px;
+  }
+  .pantry-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  .pantry-remove { background: none; border: none; color: var(--ink-muted); font-size: 16px; line-height: 1; padding: 0 2px; opacity: 0.5; }
+  .pantry-remove:hover { opacity: 1; color: var(--terracotta); }
+
+  /* ── Divider ── */
+  .divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+  /* ── Utility ── */
+  .row { display: flex; gap: 10px; align-items: center; }
+  .flex1 { flex: 1; }
+  .text-muted { color: var(--ink-muted); font-size: 13px; }
+  .text-small { font-size: 12px; }
+  .mt8 { margin-top: 8px; }
+  .mt12 { margin-top: 12px; }
+  .mb12 { margin-bottom: 12px; }
+  .mb6 { margin-bottom: 6px; }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--ink-muted); }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; }
+  .empty-title { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--ink-light); margin-bottom: 6px; }
+
+  /* ── Loading ── */
+  .loading-dots { display: flex; gap: 6px; justify-content: center; padding: 32px 0; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--terracotta-light); animation: bounce 1.2s ease-in-out infinite; }
+  .dot:nth-child(2) { animation-delay: .15s; }
+  .dot:nth-child(3) { animation-delay: .3s; }
+  @keyframes bounce { 0%,80%,100%{transform:translateY(0);opacity:.7}40%{transform:translateY(-8px);opacity:1} }
+
+  /* ── Modal overlay ── */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(28,26,24,0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; padding: 20px;
+  }
+  .modal {
+    background: var(--warm-white);
+    border-radius: var(--radius);
+    padding: 28px;
+    max-width: 420px; width: 100%;
+    box-shadow: var(--shadow-md);
+  }
+  .modal-title { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 8px; }
+  .modal-sub { font-size: 13px; color: var(--ink-muted); margin-bottom: 20px; line-height: 1.5; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
+  /* ── Notes ── */
+  .notes-box { background: var(--cream); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px; color: var(--ink-light); line-height: 1.6; white-space: pre-wrap; margin-top: 8px; border: 1px solid var(--border); }
+
+  /* ── Accordion ── */
+  .accordion-toggle { background: none; border: none; display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-muted); padding: 0; font-family: 'DM Sans', sans-serif; }
+  .accordion-toggle:hover { color: var(--terracotta); }
+  .accordion-arrow { font-size: 10px; transition: transform .2s; }
+  .accordion-arrow.open { transform: rotate(180deg); }
+
+  /* ── Saved badge ── */
+  .saved-date { font-size: 11px; color: var(--ink-muted); margin-top: 2px; }
+
+  /* ── Share strip ── */
+  .share-strip {
+    background: var(--terracotta-pale);
+    border: 1.5px solid var(--terracotta-light);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .share-strip-text { flex: 1; font-size: 13px; color: var(--terracotta); }
+  .share-strip-text strong { font-weight: 500; }
+
+  @media (max-width: 520px) {
+    .header-title { font-size: 26px; }
+    .tabs { overflow-x: auto; }
+    .tab { padding: 10px 14px; font-size: 13px; }
+    .pantry-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-eyebrow">Family Kitchen</div>
+      <h1 class="header-title">Our Dinner Planner</h1>
+      <div class="header-sub" id="pantry-count-header">Loading pantry...</div>
+    </div>
+    <button class="api-pill" id="api-btn" onclick="openApiModal()">
+      <span class="api-dot" id="api-dot"></span>
+      <span id="api-label">Set up AI</span>
+    </button>
+  </div>
+
+  <!-- Share strip (shown when no API key) -->
+  <div class="share-strip" id="share-strip" style="display:none">
+    <div class="share-strip-text">
+      <strong>Add your Anthropic API key</strong> to get recipe suggestions. Click "Set up AI" above — it's free to get started at console.anthropic.com.
+    </div>
+    <a href="https://console.anthropic.com" target="_blank" class="btn btn-sm" style="white-space:nowrap">Get API key</a>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('ideas', this)">Recipe Ideas</button>
+    <button class="tab" onclick="switchTab('saved', this)">Saved Recipes</button>
+    <button class="tab" onclick="switchTab('pantry', this)">My Pantry</button>
+  </div>
+
+  <!-- ════ IDEAS TAB ════ -->
+  <div id="tab-ideas">
+    <div class="card">
+      <div class="label">What are you in the mood for tonight?</div>
+      <textarea id="idea-input" placeholder="e.g. something quick with chicken, a cozy pasta dish, using up ground beef, healthy weeknight meal..."></textarea>
+      <div class="row mt8" style="justify-content:flex-end">
+        <button class="btn btn-primary" id="find-btn" onclick="getRecipes()">
+          Find recipes
+        </button>
+      </div>
+    </div>
+
+    <div id="loading-state" style="display:none">
+      <div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <div style="text-align:center;font-size:13px;color:var(--ink-muted);margin-top:-12px;padding-bottom:24px">Browsing your pantry for ideas...</div>
+    </div>
+
+    <div id="error-msg" style="display:none;color:var(--terracotta);font-size:14px;padding:8px 0;margin-bottom:8px"></div>
+
+    <div id="suggestions-container"></div>
+  </div>
+
+  <!-- ════ SAVED TAB ════ -->
+  <div id="tab-saved" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div class="section-title" style="margin-bottom:0" id="saved-count-title">Saved Recipes</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm btn-ghost" onclick="exportData()">Export</button>
+        <label class="btn btn-sm btn-ghost" style="cursor:pointer">Import <input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
+      </div>
+    </div>
+    <div id="saved-container">
+      <div class="empty-state">
+        <div class="empty-icon">📖</div>
+        <div class="empty-title">No saved recipes yet</div>
+        <div class="text-muted">Save recipes from the Ideas tab to build your collection</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PANTRY TAB ════ -->
+  <div id="tab-pantry" style="display:none">
+    <div class="card mb12">
+      <div class="label">Add food item</div>
+      <div class="row">
+        <input class="flex1" id="new-item-input" placeholder="e.g. Organic Salmon Fillet" onkeydown="if(event.key==='Enter')addPantryItem()">
+        <button class="btn btn-primary" onclick="addPantryItem()">Add</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="pantry-search-row">
+        <input class="flex1" id="pantry-search" placeholder="Search pantry..." oninput="renderPantry()">
+        <span class="pantry-count" id="pantry-count">0 items</span>
+      </div>
+      <div class="pantry-grid" id="pantry-grid"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════ API KEY MODAL ════ -->
+<div class="modal-bg" id="api-modal" style="display:none" onclick="if(event.target===this)closeApiModal()">
+  <div class="modal">
+    <div class="modal-title">Connect AI</div>
+    <div class="modal-sub">Enter your Anthropic API key to power recipe suggestions. Your key is saved locally in your browser and never sent anywhere except Anthropic's servers. Get a free key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--terracotta)">console.anthropic.com</a>.</div>
+    <div class="label">API Key</div>
+    <input type="password" id="api-key-input" placeholder="sk-ant-..." style="margin-bottom:0">
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-ghost" onclick="closeApiModal()">Cancel</button>
+      <button class="btn btn-sm btn-primary" onclick="saveApiKey()">Save key</button>
+    </div>
+  </div>
+</div>
+
+<script>
+HTMLEOF
+
+# Now inject the pantry data
+cat /home/claude/pantry_data.js >> /home/claude/dinner_planner.html
+
+cat << 'JSEOF' >> /home/claude/dinner_planner.html
+
+// ── State ──
+let pantry = [];
+let saved = [];
+let apiKey = '';
+
+// ── Init ──
+function init() {
+  apiKey = localStorage.getItem('dp-api-key') || '';
+  const raw = localStorage.getItem('dp-pantry');
+  pantry = raw ? JSON.parse(raw) : [...PANTRY_DEFAULTS];
+  const rawS = localStorage.getItem('dp-saved');
+  saved = rawS ? JSON.parse(rawS) : [];
+  updateApiUI();
+  updateHeaderCount();
+  renderPantry();
+  renderSaved();
+}
+
+function savePantry() {
+  localStorage.setItem('dp-pantry', JSON.stringify(pantry));
+  updateHeaderCount();
+  renderPantry();
+}
+function saveSaved() {
+  localStorage.setItem('dp-saved', JSON.stringify(saved));
+  renderSaved();
+}
+
+// ── API key ──
+function openApiModal() {
+  document.getElementById('api-key-input').value = apiKey;
+  document.getElementById('api-modal').style.display = 'flex';
+}
+function closeApiModal() { document.getElementById('api-modal').style.display = 'none'; }
+function saveApiKey() {
+  apiKey = document.getElementById('api-key-input').value.trim();
+  localStorage.setItem('dp-api-key', apiKey);
+  updateApiUI();
+  closeApiModal();
+}
+function updateApiUI() {
+  const dot = document.getElementById('api-dot');
+  const label = document.getElementById('api-label');
+  const strip = document.getElementById('share-strip');
+  if (apiKey) {
+    dot.className = 'api-dot connected';
+    label.textContent = 'AI connected';
+    strip.style.display = 'none';
+  } else {
+    dot.className = 'api-dot';
+    label.textContent = 'Set up AI';
+    strip.style.display = 'flex';
+  }
+}
+
+// ── Tab switching ──
+function switchTab(name, el) {
+  ['ideas','saved','pantry'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+}
+
+// ── Header count ──
+function updateHeaderCount() {
+  document.getElementById('pantry-count-header').textContent = pantry.length + ' items in your pantry history';
+}
+
+// ── Recipe ideas ──
+function findRelevant(text) {
+  const words = text.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+  const scored = pantry.map(item => {
+    const il = item.toLowerCase();
+    let score = 0;
+    words.forEach(w => { if (il.includes(w)) score += 3; });
+    return { item, score };
+  }).filter(x => x.score > 0).sort((a, b) => b.score - a.score).slice(0, 50).map(x => x.item);
+  const base = pantry.slice(0, 40);
+  return [...new Set([...scored, ...base])].slice(0, 80);
+}
+
+async function getRecipes() {
+  const text = document.getElementById('idea-input').value.trim();
+  if (!text) return;
+  if (!apiKey) { openApiModal(); return; }
+
+  document.getElementById('find-btn').disabled = true;
+  document.getElementById('find-btn').textContent = 'Looking…';
+  document.getElementById('loading-state').style.display = 'block';
+  document.getElementById('error-msg').style.display = 'none';
+  document.getElementById('suggestions-container').innerHTML = '';
+
+  const relevant = findRelevant(text);
+  const prompt = `You are a helpful dinner recipe assistant for a family. They have ordered these groceries in the past (their pantry history):
+
+${relevant.join(', ')}
+
+They want: "${text}"
+
+Suggest exactly 2 dinner recipes using items from their pantry. For each recipe, choose ingredients they likely already have.
+
+Return ONLY a JSON array with exactly 2 objects. Each object:
+{
+  "title": "Recipe Name",
+  "description": "1-2 sentence description of the dish",
+  "prepTime": "X mins",
+  "cookTime": "X mins",
+  "ingredients": [{"name": "ingredient name", "inPantry": true or false}],
+  "steps": ["Step 1...", "Step 2...", ...]
+}
+
+JSON only, no other text.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1200,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    if (!res.ok) throw new Error('API error ' + res.status);
+    const data = await res.json();
+    let raw = data.content?.find(c => c.type === 'text')?.text || '';
+    raw = raw.replace(/```json|```/g, '').trim();
+    const recipes = JSON.parse(raw);
+    renderSuggestions(recipes);
+  } catch(e) {
+    const msg = document.getElementById('error-msg');
+    msg.style.display = 'block';
+    msg.textContent = e.message.includes('401')
+      ? 'Invalid API key. Click "Set up AI" to update it.'
+      : 'Could not load recipes. Please try again. (' + e.message + ')';
+  }
+
+  document.getElementById('loading-state').style.display = 'none';
+  document.getElementById('find-btn').disabled = false;
+  document.getElementById('find-btn').textContent = 'Find recipes';
+}
+
+// ── Render suggestions ──
+function inPantry(name) {
+  const nl = name.toLowerCase();
+  return pantry.some(p => {
+    const pl = p.toLowerCase();
+    const key = pl.replace(/,.*/, '').replace(/\d.*/, '').trim();
+    return key.length > 4 && nl.includes(key);
+  });
+}
+
+function renderSuggestions(recipes) {
+  const c = document.getElementById('suggestions-container');
+  c.innerHTML = recipes.map((r, i) => `
+    <div class="card-recipe" id="sug-${i}">
+      <div class="recipe-header">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <div style="flex:1">
+            <div class="recipe-title">${esc(r.title)}</div>
+            <div class="recipe-desc mt8">${esc(r.description)}</div>
+            <div class="meta-tags">
+              ${r.prepTime ? `<span class="tag tag-gray">⏱ Prep ${esc(r.prepTime)}</span>` : ''}
+              ${r.cookTime ? `<span class="tag tag-gray">🍳 Cook ${esc(r.cookTime)}</span>` : ''}
+              <span class="tag tag-green">${r.ingredients.filter(ig => ig.inPantry || inPantry(ig.name)).length}/${r.ingredients.length} in pantry</span>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-primary" id="save-btn-${i}" onclick="saveFromSuggestion(${i}, this)" style="flex-shrink:0;margin-top:2px">Save</button>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;flex-wrap:wrap">
+          <div>
+            <div class="label mb6">Ingredients</div>
+            <ul class="ingredient-list">
+              ${r.ingredients.map(ig => {
+                const has = ig.inPantry || inPantry(ig.name);
+                return `<li class="ingredient-item">
+                  <span class="check-icon ${has ? 'check-yes' : 'check-no'}">${has ? '✓' : '+'}</span>
+                  <span style="color:${has ? 'var(--ink)' : 'var(--ink-muted)'}">${esc(ig.name)}</span>
+                </li>`;
+              }).join('')}
+            </ul>
+          </div>
+          <div>
+            <button class="accordion-toggle" onclick="toggleSteps(${i})" id="steps-toggle-${i}">
+              <span>Instructions</span>
+              <span class="accordion-arrow" id="arrow-${i}">▼</span>
+            </button>
+            <ol class="steps-list" id="steps-${i}" style="margin-top:10px;display:none">
+              ${r.steps.map((s, si) => `
+                <li class="step-item">
+                  <span class="step-num">${si+1}</span>
+                  <span>${esc(s)}</span>
+                </li>`).join('')}
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  window._currentSuggestions = recipes;
+}
+
+function toggleSteps(i) {
+  const el = document.getElementById('steps-' + i);
+  const arrow = document.getElementById('arrow-' + i);
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  arrow.className = 'accordion-arrow' + (open ? '' : ' open');
+}
+
+function saveFromSuggestion(i, btn) {
+  const r = window._currentSuggestions[i];
+  if (!r) return;
+  const record = { ...r, id: Date.now(), savedAt: new Date().toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}), rating: 0, note: '' };
+  saved = [record, ...saved];
+  saveSaved();
+  btn.textContent = 'Saved ✓';
+  btn.className = 'btn btn-sm';
+  btn.disabled = true;
+}
+
+// ── Saved recipes ──
+function renderSaved() {
+  const c = document.getElementById('saved-container');
+  const title = document.getElementById('saved-count-title');
+  title.textContent = saved.length > 0 ? `${saved.length} Saved Recipe${saved.length > 1 ? 's' : ''}` : 'Saved Recipes';
+  if (saved.length === 0) {
+    c.innerHTML = `<div class="empty-state"><div class="empty-icon">📖</div><div class="empty-title">No saved recipes yet</div><div class="text-muted">Save recipes from the Ideas tab to build your collection</div></div>`;
+    return;
+  }
+  c.innerHTML = saved.map((r, i) => `
+    <div class="card-recipe">
+      <div class="recipe-header">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <div style="flex:1">
+            <div class="recipe-title">${esc(r.title)}</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap">
+              <div class="stars" id="stars-${i}">${[1,2,3,4,5].map(n=>`<span class="star${r.rating>=n?' on':''}" onclick="rateSaved(${i},${n})">★</span>`).join('')}</div>
+              <span class="saved-date">Saved ${esc(r.savedAt)}</span>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-ghost" onclick="deleteSaved(${i})">Remove</button>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div class="recipe-desc mb12">${esc(r.description)}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          ${r.prepTime ? `<span class="tag tag-gray">⏱ Prep ${esc(r.prepTime)}</span>` : ''}
+          ${r.cookTime ? `<span class="tag tag-gray">🍳 Cook ${esc(r.cookTime)}</span>` : ''}
+        </div>
+        <div class="divider"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div>
+            <div class="label mb6">Ingredients</div>
+            <ul class="ingredient-list">
+              ${(r.ingredients||[]).map(ig=>`<li class="ingredient-item"><span style="color:var(--ink-muted)">—</span><span>${esc(ig.name)}</span></li>`).join('')}
+            </ul>
+          </div>
+          <div>
+            <div class="label mb6">Instructions</div>
+            <ol class="steps-list">
+              ${(r.steps||[]).map((s,si)=>`<li class="step-item"><span class="step-num">${si+1}</span><span>${esc(s)}</span></li>`).join('')}
+            </ol>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="label mb6">Notes & tweaks</div>
+        <textarea onchange="updateNote(${i}, this.value)" placeholder="Add your notes, variations, ratings from the family..." style="font-size:13px">${esc(r.note||'')}</textarea>
+      </div>
+    </div>
+  `).join('');
+}
+
+function rateSaved(i, rating) {
+  saved[i].rating = rating;
+  saveSaved();
+}
+function deleteSaved(i) {
+  if (!confirm('Remove this recipe?')) return;
+  saved.splice(i, 1);
+  saveSaved();
+}
+function updateNote(i, val) {
+  saved[i].note = val;
+  localStorage.setItem('dp-saved', JSON.stringify(saved));
+}
+
+// ── Pantry ──
+function renderPantry() {
+  const search = (document.getElementById('pantry-search')?.value || '').toLowerCase();
+  const filtered = pantry.filter(item => item.toLowerCase().includes(search));
+  document.getElementById('pantry-count').textContent = `${filtered.length} / ${pantry.length} items`;
+  document.getElementById('pantry-grid').innerHTML = filtered.map(item => {
+    const idx = pantry.indexOf(item);
+    return `<div class="pantry-item" title="${esc(item)}">
+      <span>${esc(item)}</span>
+      <button class="pantry-remove" onclick="removePantryItem(${idx})">×</button>
+    </div>`;
+  }).join('');
+}
+
+function addPantryItem() {
+  const val = document.getElementById('new-item-input').value.trim();
+  if (!val) return;
+  pantry = [val, ...pantry];
+  savePantry();
+  document.getElementById('new-item-input').value = '';
+}
+
+function removePantryItem(i) {
+  pantry.splice(i, 1);
+  savePantry();
+}
+
+// ── Export / Import ──
+function exportData() {
+  const data = { pantry, saved, exportedAt: new Date().toISOString(), version: 1 };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'dinner-planner-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.pantry) pantry = data.pantry;
+      if (data.saved) saved = data.saved;
+      savePantry();
+      saveSaved();
+      alert('Imported successfully! ' + (data.pantry?.length || 0) + ' pantry items and ' + (data.saved?.length || 0) + ' saved recipes.');
+    } catch(err) {
+      alert('Could not read file. Make sure it is a valid Dinner Planner export.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ── Utility ──
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Keyboard shortcut (Cmd/Ctrl+Enter to search) ──
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    const focused = document.activeElement;
+    if (focused && focused.id === 'idea-input') getRecipes();
+  }
+});
+
+init();
+</script>
+</body>
+</html>
+JSEOF
+echo "Done. File size: $(wc -c < /home/claude/dinner_planner.html) bytes"
